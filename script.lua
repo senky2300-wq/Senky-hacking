@@ -1,6 +1,6 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local Window = Fluent:CreateWindow({
-    Title = "SIEU CAP CHIEN THAN V7 - SPEED ATTACK",
+    Title = "CHIEN THAN BONG DEM V8 - CRACK LOGIC",
     SubTitle = "Admin ID: 1180691145630683216",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
@@ -9,35 +9,51 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-local Tabs = {
-    Main = Window:AddTab({ Title = "Farm", Icon = "home" }),
-    Stats = Window:AddTab({ Title = "Stats", Icon = "bar-chart" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "settings" })
-}
-
 local Config = {
     AutoFarm = false,
     FastAttack = false,
     BringMob = false,
-    Distance = 10
+    Distance = 10,
+    AutoStats = false,
+    SelectedStat = "Melee"
 }
 
-local Quests = {
+local QuestList = {
     ["Sea1"] = {
         {0, "Bandit", "BanditQuest1", 1, CFrame.new(1059, 15, 1550)},
         {10, "Monkey", "JungleQuest", 1, CFrame.new(-1598, 37, 153)},
-        {15, "Gorilla", "JungleQuest", 2, CFrame.new(-1204, 51, -452)}
+        {15, "Gorilla", "JungleQuest", 2, CFrame.new(-1204, 51, -452)},
+        {30, "Pirate", "PiratIslandQuest", 1, CFrame.new(-1144, 4, 3827)}
     }
 }
 
 function GetQuest()
     local myLevel = game.Players.LocalPlayer.Data.Level.Value
     local res = nil
-    for _, q in pairs(Quests["Sea1"]) do
+    for _, q in pairs(QuestList["Sea1"]) do
         if myLevel >= q[1] then res = q end
     end
     return res
 end
+
+task.spawn(function()
+    while task.wait() do
+        if Config.FastAttack then
+            pcall(function()
+                local combat = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework)
+                local active = combat.activeController
+                if active and active.activeWeapon then
+                    active.hitboxMagnitude = 65
+                    for i = 1, 5 do
+                        active.activeWeapon:Attack()
+                    end
+                end
+                game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 0)
+            end)
+        end
+    end
+end)
 
 task.spawn(function()
     while task.wait() do
@@ -64,14 +80,6 @@ task.spawn(function()
                                     end
                                 end
                                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, Config.Distance, 0)
-                                if Config.FastAttack then
-                                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 0)
-                                    local combat = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework)
-                                    if combat.activeController and combat.activeController.activeWeapon then
-                                        combat.activeController.activeWeapon:Attack()
-                                    end
-                                end
                             until not Config.AutoFarm or v.Humanoid.Health <= 0 or not v.Parent
                         end
                     end
@@ -81,9 +89,15 @@ task.spawn(function()
     end
 end)
 
-Tabs.Main:AddToggle("Farm", {Title = "Auto Farm (Sieu Nhanh)", Default = false}):OnChanged(function(v) Config.AutoFarm = v end)
-Tabs.Main:AddToggle("Attack", {Title = "Sieu Fast Attack", Default = false}):OnChanged(function(v) Config.FastAttack = v end)
+local Tabs = {
+    Main = Window:AddTab({ Title = "Farm", Icon = "home" }),
+    Stats = Window:AddTab({ Title = "Stats", Icon = "bar-chart" })
+}
+
+Tabs.Main:AddToggle("Farm", {Title = "Auto Farm Level (V8)", Default = false}):OnChanged(function(v) Config.AutoFarm = v end)
+Tabs.Main:AddToggle("Attack", {Title = "Fast Attack (MinVn Style)", Default = false}):OnChanged(function(v) Config.FastAttack = v end)
 Tabs.Main:AddToggle("Bring", {Title = "Gom Quai", Default = false}):OnChanged(function(v) Config.BringMob = v end)
+Tabs.Main:AddSlider("Dist", {Title = "Distance", Min = 5, Max = 20, Default = 10, Callback = function(v) Config.Distance = v end})
 
 local SG = Instance.new("ScreenGui", game.CoreGui)
 local BT = Instance.new("TextButton", SG)
