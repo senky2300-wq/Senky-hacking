@@ -1,20 +1,21 @@
--- [[ SENKY HUB V-FINAL++++ 2026 - AUTO START + HỎI TỰ BẬT LẦN SAU + FULL 3 SEA 😈 ]] --
--- Trên 300 dòng | Chức năng full xài được | Auto Farm bật sẵn | Tắt prompt reset config
+-- [[ SENKY HUB V-FINAL+++++ 2026 - NO MENU, NO PROMPT, AUTO FARM NGẦM 😈 ]] --
+-- Không hiện UI | Không hỏi reset config | Auto bật farm khi vào | Full 3 Sea quest | Bring Mob New 2026
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+-- Create window but HIDE it completely and disable config saving to avoid prompts
 local Window = Rayfield:CreateWindow({
-   Name = "Senky Hub V-FINAL++++ 2026 😈",
-   LoadingTitle = "Loading full 3 Sea + Auto Start...",
+   Name = "Senky Hub V-FINAL+++++ 2026 😈",
+   LoadingTitle = "Loading auto farm ngầm...",
    LoadingSubtitle = "by Senky Chiến Thần - Jan 2026",
    ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil,
-      FileName = "SenkyHubFinalPlusPlus"
+      Enabled = false  -- TẮT HOÀN TOÀN SAVE/LOAD CONFIG → KHÔNG HỎI PROMPT RESET
    },
-   DisableRayfieldPrompts = true,  -- Tắt prompt reset config mặc định
    KeySystem = false
 })
+
+-- Ẩn menu/UI ngay lập tức (không hiện popup nào)
+Window:Hide()
 
 -- Services
 local Players = game:GetService("Players")
@@ -27,53 +28,20 @@ local UserInputService = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
 
--- Variables
+-- Variables (auto bật hết để farm ngầm)
 local _G = _G or {}
-_G.AutoFarm = false  -- Default false, sẽ hỏi lần đầu
+_G.AutoFarm = true
 _G.BringMob = true
 _G.AutoAttack = true
-_G.FastAttackSpeed = 0.08
+_G.FastAttackSpeed = 0.08  -- Spam M1 nhanh
 _G.Speed = 150
-_G.FlyEnabled = false
+_G.FlyEnabled = false  -- Bật tay nếu cần (thêm toggle sau nếu muốn)
 _G.NoClip = true
 _G.AntiAFK = true
 _G.AutoFruit = false
 _G.AutoHop = false
 
--- Load/Save config tự bật
-local ConfigKey = "SenkyAutoStartFarm"
-local savedAutoStart = Rayfield:GetConfigurationValue(ConfigKey) or false
-
--- Hỏi lần đầu nếu chưa save
-if not Rayfield:GetConfigurationValue("HasAskedAutoStart") then
-   Rayfield:Notify({
-      Title = "Cài Đặt Tự Động",
-      Content = "Bạn có muốn tự bật Auto Farm mỗi khi vào game không?\n(Yes: Tự bật lần sau | No: Hỏi tiếp)",
-      Duration = 0,
-      Actions = {
-         Ignore = {
-            Name = "Yes",
-            Callback = function()
-               Rayfield:SetConfigurationValue(ConfigKey, true)
-               Rayfield:SetConfigurationValue("HasAskedAutoStart", true)
-               _G.AutoFarm = true
-               Rayfield:Notify({Title = "Đã Lưu!", Content = "Lần sau tự bật Auto Farm!", Duration = 5})
-            end
-         },
-         Ignore2 = {
-            Name = "No",
-            Callback = function()
-               Rayfield:SetConfigurationValue("HasAskedAutoStart", true)
-               Rayfield:Notify({Title = "OK", Content = "Lần sau sẽ hỏi lại!", Duration = 5})
-            end
-         }
-      }
-   })
-else
-   _G.AutoFarm = savedAutoStart
-end
-
--- Character load
+-- Character load/respawn
 local char, hrp
 local function LoadChar()
    char = Player.Character or Player.CharacterAdded:Wait()
@@ -82,8 +50,8 @@ end
 LoadChar()
 Player.CharacterAdded:Connect(LoadChar)
 
--- Fly keys
-local keys = {W=false,S=false,A=false,D=false,Space=false,LeftShift=false}
+-- Fly controls (nếu bật Fly)
+local keys = {W = false, S = false, A = false, D = false, Space = false, LeftShift = false}
 UserInputService.InputBegan:Connect(function(input)
    local name = input.KeyCode.Name
    if name == "W" then keys.W = true end
@@ -103,10 +71,10 @@ UserInputService.InputEnded:Connect(function(input)
    if name == "LeftShift" then keys.LeftShift = false end
 end)
 
--- Teleport
-local function TP(pos)
+-- Teleport stable
+local function Teleport(pos)
    pcall(function()
-      local tween = TweenService:Create(hrp, TweenInfo.new(0.6), {CFrame = CFrame.new(pos)})
+      local tween = TweenService:Create(hrp, TweenInfo.new(0.6, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
       tween:Play()
       tween.Completed:Wait()
    end)
@@ -130,13 +98,13 @@ end)
 -- NoClip
 RunService.Stepped:Connect(function()
    if _G.NoClip and char then
-      for _, p in pairs(char:GetDescendants()) do
-         if p:IsA("BasePart") then p.CanCollide = false end
+      for _, part in pairs(char:GetDescendants()) do
+         if part:IsA("BasePart") then part.CanCollide = false end
       end
    end
 end)
 
--- Fly
+-- Fly system
 local bv, bg
 RunService.Heartbeat:Connect(function()
    if _G.FlyEnabled and hrp then
@@ -160,20 +128,20 @@ RunService.Heartbeat:Connect(function()
    end
 end)
 
--- Full Quest 3 Sea Table (add hết, pos approx từ wiki 2026)
+-- Full Quest Table 3 Sea (add hết từ wiki/data 2026, pos approx chính xác)
 local QuestList = {
-   {min = 0, quest = "BanditQuest1", id = 1, mob = "Bandit", pos = Vector3.new(1059.37, 16.52, 1548.82)},
-   {min = 10, quest = "JungleQuest", id = 1, mob = "Monkey", pos = Vector3.new(-1602.21, 36.85, 131.78)},
-   {min = 15, quest = "JungleQuest", id = 2, mob = "Gorilla", pos = Vector3.new(-1602.21, 36.85, 131.78)},
-   {min = 30, quest = "BuggyQuest1", id = 1, mob = "Pirate", pos = Vector3.new(-1139.6, 4.75, 3825.16)},
-   {min = 40, quest = "BuggyQuest1", id = 2, mob = "Brute", pos = Vector3.new(-1139.6, 4.75, 3825.16)},
-   {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932.79, 6.45, 4489.83)},
-   {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932.79, 6.45, 4489.83)},
-   {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374.47, 87.27, -1321.3)},
-   {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374.47, 87.27, -1321.3)},
-   {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882.86, 22.65, -5102.86)},
-   {min = 150, quest = "SkyQuest", id = 1, mob = "Sky Bandit", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
-   {min = 175, quest = "SkyQuest", id = 2, mob = "Dark Master", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
+   {min = 0, quest = "BanditQuest1", id = 1, mob = "Bandit", pos = Vector3.new(1059.37195, 16.5166187, 1548.82324)},
+   {min = 10, quest = "JungleQuest", id = 1, mob = "Monkey", pos = Vector3.new(-1602.21265, 36.85214996, 131.780869)},
+   {min = 15, quest = "JungleQuest", id = 2, mob = "Gorilla", pos = Vector3.new(-1602.21265, 36.85214996, 131.780869)},
+   {min = 30, quest = "BuggyQuest1", id = 1, mob = "Pirate", pos = Vector3.new(-1139.59717, 4.75205183, 3825.1626)},
+   {min = 40, quest = "BuggyQuest1", id = 2, mob = "Brute", pos = Vector3.new(-1139.59717, 4.75205183, 3825.1626)},
+   {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932.788818, 6.4503746, 4489.82617)},
+   {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932.788818, 6.4503746, 4489.82617)},
+   {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374.4729, 87.2727814, -1321.29639)},
+   {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374.4729, 87.2727814, -1321.29639)},
+   {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882.8623, 22.6520386, -5102.85596)},
+   {min = 150, quest = "SkyQuest", id = 1, mob = "Sky Bandit", pos = Vector3.new(-4724.2793, 845.796875, -1953.3396)},
+   {min = 175, quest = "SkyQuest", id = 2, mob = "Dark Master", pos = Vector3.new(-4724.2793, 845.796875, -1953.3396)},
    {min = 190, quest = "PrisonerQuest", id = 1, mob = "Prisoner", pos = Vector3.new(5423, 88, 617)},
    {min = 210, quest = "PrisonerQuest", id = 2, mob = "Dangerous Prisoner", pos = Vector3.new(5423, 88, 617)},
    {min = 250, quest = "ColosseumQuest", id = 1, mob = "Toga Warrior", pos = Vector3.new(-1576, 7, 298.59)},
@@ -202,7 +170,7 @@ local function GetQuest()
    return QuestList[1]
 end
 
--- Auto Farm + Bring + Attack
+-- Auto Farm Loop (ngầm chạy, gom mob + spam đánh)
 task.spawn(function()
    while task.wait(0.08) do
       if _G.AutoFarm and hrp then
@@ -212,8 +180,10 @@ task.spawn(function()
                Teleport(q.pos + Vector3.new(0,5,0))
                ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", q.quest, q.id)
             else
+               local found = false
                for _, mob in pairs(Workspace.Enemies:GetChildren()) do
                   if mob.Name == q.mob and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                     found = true
                      if _G.BringMob then
                         mob.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0,0,-8)
                         mob.HumanoidRootPart.Velocity = Vector3.new(0, -30, 0)
@@ -228,7 +198,7 @@ task.spawn(function()
                      end
                   end
                end
-               if _G.AutoHop and not foundMob then
+               if _G.AutoHop and not found then
                   game:GetService("TeleportService"):Teleport(game.PlaceId)
                end
             end
@@ -237,7 +207,7 @@ task.spawn(function()
    end
 end)
 
--- Auto Fruit
+-- Auto Fruit Sniper (ngầm)
 task.spawn(function()
    while task.wait(1) do
       if _G.AutoFruit then
@@ -250,19 +220,6 @@ task.spawn(function()
    end
 end)
 
--- UI Tabs
-local FarmTab = Window:CreateTab("Farm Chính")
-FarmTab:CreateToggle({Name = "Auto Farm", CurrentValue = _G.AutoFarm, Callback = function(v) _G.AutoFarm = v end})
-FarmTab:CreateToggle({Name = "Bring Mob New", CurrentValue = true, Callback = function(v) _G.BringMob = v end})
-FarmTab:CreateToggle({Name = "Auto Attack Spam", CurrentValue = true, Callback = function(v) _G.AutoAttack = v end})
-FarmTab:CreateToggle({Name = "No Clip", CurrentValue = true, Callback = function(v) _G.NoClip = v end})
-FarmTab:CreateToggle({Name = "Fly (WASD+Space/Shift)", CurrentValue = false, Callback = function(v) _G.FlyEnabled = v end})
-FarmTab:CreateSlider({Name = "Walk Speed", Range = {50,500}, CurrentValue = 150, Callback = function(v) _G.Speed = v end})
-FarmTab:CreateSlider({Name = "Fast Attack Delay", Range = {0.05,0.2}, CurrentValue = 0.08, Callback = function(v) _G.FastAttackSpeed = v end})
-
-local UtilsTab = Window:CreateTab("Tiện Ích")
-UtilsTab:CreateToggle({Name = "Anti AFK", CurrentValue = true, Callback = function(v) _G.AntiAFK = v end})
-UtilsTab:CreateToggle({Name = "Auto Fruit Sniper", CurrentValue = false, Callback = function(v) _G.AutoFruit = v end})
-UtilsTab:CreateToggle({Name = "Auto Hop No Mob", CurrentValue = false, Callback = function(v) _G.AutoHop = v end})
-
-Rayfield:Notify({Title = "FULL LOADED!", Content = "Đã hỏi tự bật lần sau! Farm auto chạy, gom mob + spam đánh ngon max! 😈", Duration = 10})
+-- Silent notify (in console, không hiện popup)
+print("Senky Hub V-FINAL+++++ 2026 loaded! Auto Farm NGẦM chạy: gom mob + spam đánh tự động 😈")
+print("Không hiện menu, không hỏi prompt config. Farm vui tay lên 2800 nhanh!")
