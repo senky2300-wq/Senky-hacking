@@ -1,9 +1,10 @@
--- [[ SENKY HUB V-FINAL++++ 2026 - FULL FEATURE UPDATE 😈 ]] --
+-- [[ SENKY HUB V-FINAL++++ 2026 - FULL CODE + WATER & JUMP BYPASS 😈 ]] --
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "Senky Hub V-FINAL++++ 2026 😈",
-   LoadingTitle = "Loading full 3 Sea + New Features...",
+   LoadingTitle = "Loading full 3 Sea + Anti-Water + Jump...",
    LoadingSubtitle = "by Senky Chiến Thần - Jan 2026",
    ConfigurationSaving = {
       Enabled = true,
@@ -14,7 +15,7 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false
 })
 
--- Services
+-- [[ SERVICES ]] --
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -25,7 +26,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
 
--- Variables (Giữ nguyên + thêm biến mới)
+-- [[ VARIABLES ]] --
 local _G = _G or {}
 _G.AutoFarm = false
 _G.BringMob = true
@@ -37,12 +38,11 @@ _G.NoClip = true
 _G.AntiAFK = true
 _G.AutoFruit = false
 _G.AutoHop = false
--- New Variables
-_G.InfiniteJump = false
-_G.WalkOnWater = false
-_G.AntiLava = false
+-- New Vars
+_G.InfiniteJump = true
+_G.WalkOnWater = true
 
--- Character load
+-- [[ CHARACTER LOAD ]] --
 local char, hrp
 local function LoadChar()
    char = Player.Character or Player.CharacterAdded:Wait()
@@ -51,47 +51,37 @@ end
 LoadChar()
 Player.CharacterAdded:Connect(LoadChar)
 
--- [[ NEW: INFINITE JUMP ]] --
+-- [[ NEW: INFINITE JUMP (NHẢY TRÊN KHÔNG) ]] --
 UserInputService.JumpRequest:Connect(function()
    if _G.InfiniteJump then
       char:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
    end
 end)
 
--- [[ NEW: NO ENERGY CONSUMPTION (JUMP) ]] --
--- Blox Fruit check năng lượng qua Remote, script này bypass bằng cách khóa giá trị Energy cục bộ nếu cần
+-- [[ NEW: WALK ON WATER & ANTI WATER DAMAGE (KHÁNG NƯỚC) ]] --
+-- Cách này giúp đứng trên nước và không mất máu khi dùng trái ác quỷ
 task.spawn(function()
-   while task.wait(0.5) do
+   while task.wait(0.1) do
       pcall(function()
-         if _G.InfiniteJump then
-            -- Note: Nhảy vô hạn qua ChangeState mặc định đã ít tốn energy hơn bản gốc
-            Player.Character.Stamina.Value = Player.Character.Stamina.Max()
-         end
-      end)
-   end
-end)
-
--- [[ NEW: WALK ON WATER & ANTI LAVA ]] --
-task.spawn(function()
-   while task.wait(1) do
-      pcall(function()
-         -- Walk on Water
-         if Workspace:FindFirstChild("Map") and Workspace.Map:FindFirstChild("WaterBase") then
-            Workspace.Map.WaterBase.CanCollide = _G.WalkOnWater
-         end
-         -- Anti Lava (Xóa vùng gây sát thương)
-         if _G.AntiLava then
+         if _G.WalkOnWater then
+            -- Chặn chìm và chặn sát thương từ nước
             for _, v in pairs(Workspace:GetDescendants()) do
-               if v.Name == "Lava" or v.Name == "LavaPart" or v:GetAttribute("Damage") then
-                  v.CanTouch = false
+               if v.Name == "WaterBase" or v.Name == "Water" or v.Name == "Sea" then
+                  v.CanCollide = true -- Đứng lên mặt nước
+                  v.CanTouch = false  -- Không chạm (không kích hoạt script mất máu của game)
                end
+            end
+            -- Fix riêng cho Map 2026
+            if Workspace:FindFirstChild("Map") and Workspace.Map:FindFirstChild("WaterBase") then
+               Workspace.Map.WaterBase.CanCollide = true
+               Workspace.Map.WaterBase.CanTouch = false
             end
          end
       end)
    end
 end)
 
--- Fly keys (WASD) - GIỮ NGUYÊN
+-- [[ FLY KEYS (WASD) ]] --
 local keys = {W=false,S=false,A=false,D=false,Space=false,LeftShift=false}
 UserInputService.InputBegan:Connect(function(input)
    local name = input.KeyCode.Name
@@ -112,7 +102,7 @@ UserInputService.InputEnded:Connect(function(input)
    if name == "LeftShift" then keys.LeftShift = false end
 end)
 
--- Teleport - GIỮ NGUYÊN
+-- [[ TELEPORT ]] --
 local function TP(pos)
    pcall(function()
       local tween = TweenService:Create(hrp, TweenInfo.new(0.6), {CFrame = CFrame.new(pos)})
@@ -121,7 +111,7 @@ local function TP(pos)
    end)
 end
 
--- Anti-AFK - GIỮ NGUYÊN
+-- [[ ANTI-AFK ]] --
 task.spawn(function()
    while _G.AntiAFK do
       VirtualUser:Button1Down(Vector2.new())
@@ -129,14 +119,14 @@ task.spawn(function()
    end
 end)
 
--- Speed hack - GIỮ NGUYÊN
+-- [[ SPEED HACK ]] --
 RunService.RenderStepped:Connect(function()
    if char and char:FindFirstChild("Humanoid") then
       char.Humanoid.WalkSpeed = _G.Speed
    end
 end)
 
--- NoClip - GIỮ NGUYÊN
+-- [[ NO CLIP ]] --
 RunService.Stepped:Connect(function()
    if _G.NoClip and char then
       for _, p in pairs(char:GetDescendants()) do
@@ -145,7 +135,7 @@ RunService.Stepped:Connect(function()
    end
 end)
 
--- Fly system - GIỮ NGUYÊN
+-- [[ FLY SYSTEM ]] --
 local bv, bg
 RunService.Heartbeat:Connect(function()
    if _G.FlyEnabled and hrp then
@@ -169,15 +159,21 @@ RunService.Heartbeat:Connect(function()
    end
 end)
 
--- Full Quest Table 3 Sea - GIỮ NGUYÊN (Level 0 - 2200+)
+-- [[ FULL QUEST TABLE 3 SEA ]] --
 local QuestList = {
    {min = 0, quest = "BanditQuest1", id = 1, mob = "Bandit", pos = Vector3.new(1059.37, 16.52, 1548.82)},
    {min = 10, quest = "JungleQuest", id = 1, mob = "Monkey", pos = Vector3.new(-1602.21, 36.85, 131.78)},
    {min = 15, quest = "JungleQuest", id = 2, mob = "Gorilla", pos = Vector3.new(-1602.21, 36.85, 131.78)},
    {min = 30, quest = "BuggyQuest1", id = 1, mob = "Pirate", pos = Vector3.new(-1139.6, 4.75, 3825.16)},
+   {min = 40, quest = "BuggyQuest1", id = 2, mob = "Brute", pos = Vector3.new(-1139.6, 4.75, 3825.16)},
+   {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932.79, 6.45, 4489.83)},
+   {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932.79, 6.45, 4489.83)},
+   {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374.47, 87.27, -1321.3)},
+   {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374.47, 87.27, -1321.3)},
+   {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882.86, 22.65, -5102.86)},
    {min = 700, quest = "Area1Quest", id = 1, mob = "Raider", pos = Vector3.new(-429, 73, 1832)},
    {min = 1500, quest = "PiratePortTownQuest", id = 1, mob = "Pirate Millionaire", pos = Vector3.new(-290, 43.5, 5577.59)},
-   -- ... (Các quest khác trong list cũ của ông vẫn giữ nguyên ở đây)
+   {min = 2200, quest = "CakeQuest", id = 1, mob = "Cake Guard", pos = Vector3.new(0, 0, 0)}
 }
 
 local function GetQuest()
@@ -188,7 +184,7 @@ local function GetQuest()
    return QuestList[1]
 end
 
--- Auto Farm Logic - GIỮ NGUYÊN
+-- [[ AUTO FARM LOGIC ]] --
 task.spawn(function()
    while task.wait(0.08) do
       if _G.AutoFarm and hrp then
@@ -206,6 +202,7 @@ task.spawn(function()
                         mob.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0,0,-8)
                         mob.HumanoidRootPart.Velocity = Vector3.new(0, -30, 0)
                         mob.HumanoidRootPart.CanCollide = false
+                        mob.Humanoid.WalkSpeed = 0
                      end
                      hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 12, 0)
                      if _G.AutoAttack then
@@ -221,20 +218,19 @@ task.spawn(function()
    end
 end)
 
--- Giao diện Tabs
+-- [[ GIAO DIỆN TABS ]] --
 local FarmTab = Window:CreateTab("Farm Chính")
 FarmTab:CreateToggle({Name = "Auto Farm", CurrentValue = _G.AutoFarm, Callback = function(v) _G.AutoFarm = v end})
-FarmTab:CreateToggle({Name = "Bring Mob New", CurrentValue = true, Callback = function(v) _G.BringMob = v end})
+FarmTab:CreateToggle({Name = "Gom Quái (Bring Mob)", CurrentValue = true, Callback = function(v) _G.BringMob = v end})
 
-local MovementTab = Window:CreateTab("Di Chuyển")
-MovementTab:CreateToggle({Name = "Infinite Jump (No Energy)", CurrentValue = false, Callback = function(v) _G.InfiniteJump = v end})
-MovementTab:CreateToggle({Name = "Walk On Water", CurrentValue = false, Callback = function(v) _G.WalkOnWater = v end})
-MovementTab:CreateToggle({Name = "Anti Lava (No Damage)", CurrentValue = false, Callback = function(v) _G.AntiLava = v end})
-MovementTab:CreateToggle({Name = "Fly (WASD)", CurrentValue = false, Callback = function(v) _G.FlyEnabled = v end})
-MovementTab:CreateSlider({Name = "Speed", Range = {50,500}, CurrentValue = 150, Callback = function(v) _G.Speed = v end})
+local MoveTab = Window:CreateTab("Di Chuyển VIP")
+MoveTab:CreateToggle({Name = "Nhảy Vô Hạn (Space)", CurrentValue = true, Callback = function(v) _G.InfiniteJump = v end})
+MoveTab:CreateToggle({Name = "Đi Trên Nước & Kháng Damage", CurrentValue = true, Callback = function(v) _G.WalkOnWater = v end})
+MoveTab:CreateToggle({Name = "Fly (WASD)", CurrentValue = false, Callback = function(v) _G.FlyEnabled = v end})
+MoveTab:CreateSlider({Name = "Speed", Range = {50,500}, CurrentValue = 150, Callback = function(v) _G.Speed = v end})
 
 local UtilsTab = Window:CreateTab("Tiện Ích")
 UtilsTab:CreateToggle({Name = "No Clip", CurrentValue = true, Callback = function(v) _G.NoClip = v end})
-UtilsTab:CreateToggle({Name = "Anti AFK", CurrentValue = true, Callback = function(v) _G.AntiAFK = v end})
+UtilsTab:CreateToggle({Name = "Auto Fruit Sniper", CurrentValue = false, Callback = function(v) _G.AutoFruit = v end})
 
-Rayfield:Notify({Title = "UPDATE SUCCESS!", Content = "Đã thêm Nhảy Vô Hạn, Đi Trên Nước và Anti Lava! 😈", Duration = 10})
+Rayfield:Notify({Title = "CHẾ ĐỘ CHIẾN THẦN!", Content = "Đã bật Kháng Nước + Nhảy Vô Hạn! Quẩy thôi 😈", Duration = 10})
