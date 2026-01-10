@@ -1,60 +1,68 @@
--- [[ SENKY HUB - AUTO QUEST & FARM SEA 1 ]] --
+-- [[ SENKY HUB - PHIÊN BẢN CHIẾN THẦN SIÊU CẤP ]] --
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "Senky Hub 😈 | Admin: 1180691145630683216",
-   LoadingTitle = "Đang kết nối hệ thống...",
+   LoadingTitle = "Đang nạp nội công...",
    LoadingSubtitle = "by Senky"
 })
 
 -- [[ BIẾN HỆ THỐNG ]] --
 _G.AutoFarm = false
+_G.FastAttack = true
+_G.BringMob = true
+_G.WalkSpeed = 16
 local Player = game.Players.LocalPlayer
 
--- [[ BẢNG DỮ LIỆU NHIỆM VỤ SEA 1 ]] --
-function GetQuestData()
-    local lvl = Player.Data.Level.Value
-    if lvl >= 1 and lvl < 10 then
-        return "Bandit", "BanditQuest1", 1, CFrame.new(1059, 15, 1549) -- NPC Bandit
-    elseif lvl >= 10 and lvl < 15 then
-        return "Monkey", "JungleQuest", 1, CFrame.new(-1598, 35, 153) -- NPC Monkey
-    elseif lvl >= 15 and lvl < 30 then
-        return "Gorilla", "JungleQuest", 2, CFrame.new(-1598, 35, 153) -- NPC Gorilla
-    elseif lvl >= 30 and lvl < 60 then
-        return "Pirate", "BuggyQuest1", 1, CFrame.new(-1141, 4, 3828) -- NPC Pirate
-    -- Tạm thời mốc đầu Sea 1, ông cần thêm mốc nào bảo tôi nhé
-    else
-        return "Bandit", "BanditQuest1", 1, CFrame.new(1059, 15, 1549)
+-- [[ HÀM TỐI ƯU HÓA - GIẢM LAG/NÓNG MÁY ]] --
+function OptimizeGame()
+    local Terrain = game:GetService("Workspace"):FindFirstChildOfClass('Terrain')
+    Terrain.WaterWaveSize = 0
+    Terrain.WaterWaveSpeed = 0
+    Terrain.WaterReflectance = 0
+    Terrain.WaterTransparency = 0
+    game:GetService("Lighting").GlobalShadows = false
+    for i, v in pairs(game:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v:Destroy()
+        end
     end
 end
 
--- [[ LOGIC AUTO FARM & QUEST ]] --
+-- [[ AUTO NHẬP ALL CODE ]] --
+function AutoImportCodes()
+    local codes = {"TRIPLEABUSE", "Sub2CaptainMaui", "DEVSCOOKING", "Sub2Fer999", "Enyu_is_Pro", "Magicbus", "Starcodeheo", "JCWK", "KittGaming", "Bluxxy", "fudd10_v2", "SUB2GAMERROBOT_EXP1", "Sub2NoobMaster123", "Sub2UncleKizaru", "Sub2OfficialNoobie", "TheGreatAce", "Axiore", "Sub2Daigrock", "TantaiGaming", "StrawHatMaine"}
+    for _, v in pairs(codes) do
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("RedeemCode", v)
+    end
+end
+
+-- [[ LOGIC GOM QUÁI & ĐÁNH NHANH ]] --
 task.spawn(function()
     while task.wait() do
         if _G.AutoFarm then
             pcall(function()
-                local Monster, QuestName, QuestID, NPC_Pos = GetQuestData()
-
-                -- Kiểm tra nếu chưa có nhiệm vụ thì bay đi nhận
-                if not Player.PlayerGui.Main:FindFirstChild("Quest") then
-                    Player.Character.HumanoidRootPart.CFrame = NPC_Pos
-                    task.wait(0.5)
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, QuestID)
-                else
-                    -- Đã có nhiệm vụ thì đi vả quái
-                    local Target = game:GetService("Workspace").Enemies:FindFirstChild(Monster) or game:GetService("ReplicatedStorage"):FindFirstChild(Monster)
+                -- Bay lên trên đầu quái để tránh bị đánh
+                local Monster = game:GetService("Workspace").Enemies:FindFirstChildOfClass("Model")
+                if Monster and Monster:FindFirstChild("HumanoidRootPart") then
+                    Player.Character.HumanoidRootPart.CFrame = Monster.HumanoidRootPart.CFrame * CFrame.new(0, 15, 0) -- Bay lên 15 đơn vị
                     
-                    if game:GetService("Workspace").Enemies:FindFirstChild(Monster) then
-                        for i,v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                            if v.Name == Monster and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                                Player.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
-                                game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672)) -- Tự đánh
-                                break
+                    -- Gom quái (Bring Mob)
+                    if _G.BringMob then
+                        for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                            if v.Name == Monster.Name and v:FindFirstChild("HumanoidRootPart") then
+                                v.HumanoidRootPart.CFrame = Monster.HumanoidRootPart.CFrame
+                                v.HumanoidRootPart.CanCollide = false
                             end
                         end
-                    else
-                        -- Nếu quái chưa hồi sinh thì bay tới điểm chờ quái
-                        Player.Character.HumanoidRootPart.CFrame = NPC_Pos -- Bay tạm về NPC hoặc điểm spawn
+                    end
+                    
+                    -- Đánh nhanh (Fast Attack)
+                    if _G.FastAttack then
+                        game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
                     end
                 end
             end)
@@ -63,25 +71,40 @@ task.spawn(function()
 end)
 
 -- [[ GIAO DIỆN ]] --
-local MainTab = Window:CreateTab("Farm Level", 4483345998)
+local MainTab = Window:CreateTab("Tính Năng Chính", 4483345998)
 
 MainTab:CreateToggle({
-   Name = "Bật Auto Farm & Quest",
+   Name = "Auto Farm + Gom Quái + Bay",
+   CurrentValue = false,
+   Callback = function(Value) _G.AutoFarm = Value end,
+})
+
+MainTab:CreateSlider({
+   Name = "Tốc độ chạy (Speed)",
+   Range = {16, 500},
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(Value) Player.Character.Humanoid.WalkSpeed = Value end,
+})
+
+local UtilsTab = Window:CreateTab("Tiện Ích", 4483345998)
+
+UtilsTab:CreateButton({
+   Name = "Nhập Tất Cả Code (X2 EXP)",
+   Callback = function() AutoImportCodes() end,
+})
+
+UtilsTab:CreateButton({
+   Name = "Tối Ưu Hóa (Giảm Lag/Nóng Máy)",
+   Callback = function() OptimizeGame() end,
+})
+
+UtilsTab:CreateToggle({
+   Name = "Chế Độ Treo Máy (White Screen)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.AutoFarm = Value
+      game:GetService("RunService"):Set3dRenderingEnabled(not Value)
    end,
 })
 
--- [[ CHECK ADMIN ]] --
-local AdminTab = Window:CreateTab("Admin", 4483345998)
-AdminTab:CreateButton({
-   Name = "Kích hoạt Admin ID",
-   Callback = function()
-       if Player.UserId == 1180691145630683216 then
-           Rayfield:Notify({Title = "OK", Content = "Chào đại ca!", Duration = 3})
-       end
-   end,
-})
-
-Rayfield:Notify({Title = "Xong!", Content = "Hệ thống nhận quest đã sẵn sàng.", Duration = 3})
+Rayfield:Notify({Title = "Sẵn Sàng!", Content = "Bản VIP đã sẵn sàng cho chiến thần!", Duration = 5})
