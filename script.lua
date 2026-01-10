@@ -1,134 +1,112 @@
-repeat task.wait() until game:IsLoaded()
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local VirtualUser = game:GetService("VirtualUser")
-local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Player = Players.LocalPlayer
-local Data = Player:WaitForChild("Data")
-
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-   Name = "Senky Hub V-FINAL ULTRA 😈",
-   LoadingTitle = "Đang triệu hồi nội công chiến thần...",
-   LoadingSubtitle = "by Senky Mobile - 2026",
-   ConfigurationSaving = {Enabled = false},
-   KeySystem = false
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local Window = Fluent:CreateWindow({
+    Title = "CHIẾN THẦN BÓNG ĐÊM - BLOX FRUITS",
+    SubTitle = "by Dark Side Partner",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-_G.AutoFarm = false
-_G.BringMob = true
-_G.FastAttack = true
-_G.Speed = 165
-_G.FlyEnabled = false
-_G.NoClip = true
-_G.InfiniteJump = true
-_G.WalkOnWater = true
-_G.AutoFruit = false
-_G.AutoStore = true
-_G.AutoStats = false
-_G.StatsType = "Melee"
-
-local char = Player.Character or Player.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
-Player.CharacterAdded:Connect(function(n)
-    char = n
-    hrp = n:WaitForChild("HumanoidRootPart")
-end)
-
-local function TP(pos)
-    pcall(function()
-        local dist = (hrp.Position - pos).Magnitude
-        local tween = TweenService:Create(hrp, TweenInfo.new(dist/350, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
-        tween:Play()
-        tween.Completed:Wait()
-    end)
-end
-
-RunService.RenderStepped:Connect(function()
-    if _G.FastAttack and (_G.AutoFarm or _G.AutoChest) then
-        pcall(function()
-            ReplicatedStorage.Remotes.CommF_:InvokeServer("Attack", "1")
-            VirtualUser:CaptureController()
-            VirtualUser:Button1Down(Vector2.new(0,0))
-            VirtualUser:Button1Up(Vector2.new(0,0))
-        end)
-    end
-    if _G.NoClip and char then
-        for _, v in pairs(char:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
-    end
-end)
-
-local QuestList = {
-    {min = 0, quest = "BanditQuest1", id = 1, mob = "Bandit", pos = Vector3.new(1059, 16, 1548)},
-    {min = 10, quest = "JungleQuest", id = 1, mob = "Monkey", pos = Vector3.new(-1602, 36, 131)},
-    {min = 15, quest = "JungleQuest", id = 2, mob = "Gorilla", pos = Vector3.new(-1602, 36, 131)},
-    {min = 30, quest = "BuggyQuest1", id = 1, mob = "Pirate", pos = Vector3.new(-1139, 4, 3825)},
-    {min = 40, quest = "BuggyQuest1", id = 2, mob = "Brute", pos = Vector3.new(-1139, 4, 3825)},
-    {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932, 6, 4489)},
-    {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932, 6, 4489)},
-    {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374, 87, -1321)},
-    {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374, 87, -1321)},
-    {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882, 22, -5102)},
-    {min = 150, quest = "SkyQuest", id = 1, mob = "Sky Bandit", pos = Vector3.new(-4724, 845, -1953)},
-    {min = 175, quest = "SkyQuest", id = 2, mob = "Dark Master", pos = Vector3.new(-4724, 845, -1953)},
-    {min = 190, quest = "PrisonQuest", id = 1, mob = "Prisoner", pos = Vector3.new(4844, 5, 743)},
-    {min = 210, quest = "PrisonQuest", id = 2, mob = "Dangerous Prisoner", pos = Vector3.new(4844, 5, 743)},
-    {min = 250, quest = "ColosseumQuest", id = 1, mob = "Toga Warrior", pos = Vector3.new(-1576, 7, 298)},
-    {min = 275, quest = "ColosseumQuest", id = 2, mob = "Gladiator", pos = Vector3.new(-1576, 7, 298)},
-    {min = 300, quest = "MagmaQuest", id = 1, mob = "Military Soldier", pos = Vector3.new(-5242, 8, 8466)},
-    {min = 325, quest = "MagmaQuest", id = 2, mob = "Military Spy", pos = Vector3.new(-5242, 8, 8466)},
-    {min = 700, quest = "Area1Quest", id = 1, mob = "Raider", pos = Vector3.new(-429, 73, 1832)},
-    {min = 725, quest = "Area1Quest", id = 2, mob = "Mercenary", pos = Vector3.new(-429, 73, 1832)},
-    {min = 775, quest = "Area2Quest", id = 1, mob = "Swan Pirate", pos = Vector3.new(638, 73, 918)},
-    {min = 875, quest = "MansionQuest", id = 1, mob = "Marine Lieutenant", pos = Vector3.new(-648, 93, 183)},
-    {min = 925, quest = "MansionQuest", id = 2, mob = "Marine Captain", pos = Vector3.new(-648, 93, 183)},
-    {min = 1000, quest = "ShipQuest1", id = 1, mob = "Ship Pirate", pos = Vector3.new(-9506, 15, -1500)},
-    {min = 1050, quest = "ShipQuest1", id = 2, mob = "Ship Engineer", pos = Vector3.new(-9506, 15, -1500)},
-    {min = 1100, quest = "IceQuest1", id = 1, mob = "Arctic Warrior", pos = Vector3.new(-6060, 15, -5000)},
-    {min = 1150, quest = "IceQuest1", id = 2, mob = "Snow Warrior", pos = Vector3.new(-6060, 15, -5000)},
-    {min = 1250, quest = "ForgottenQuest", id = 1, mob = "Forgotten Pirate", pos = Vector3.new(-3000, 15, -3000)},
-    {min = 1350, quest = "SnowMountainQuest", id = 1, mob = "Winter Warrior", pos = Vector3.new(1150, 120, -5200)},
-    {min = 1500, quest = "PiratePortTownQuest", id = 1, mob = "Pirate Millionaire", pos = Vector3.new(-290, 43, 5577)},
-    {min = 1575, quest = "PiratePortTownQuest", id = 2, mob = "Pistol Billionaire", pos = Vector3.new(-290, 43, 5577)},
-    {min = 1700, quest = "HydraQuest1", id = 1, mob = "Dragon Crew Warrior", pos = Vector3.new(5700, 15, -100)},
-    {min = 1800, quest = "HauntedCastleQuest", id = 1, mob = "Haunted Mummy", pos = Vector3.new(-9500, 50, 5500)},
-    {min = 1900, quest = "HauntedCastleQuest", id = 2, mob = "Living Zombie", pos = Vector3.new(-9500, 50, 5500)},
-    {min = 2000, quest = "SeaOfTreatsQuest", id = 1, mob = "Peanut Scout", pos = Vector3.new(-1000, 100, -1000)},
-    {min = 2100, quest = "SeaOfTreatsQuest", id = 2, mob = "Peanut Warrior", pos = Vector3.new(-1000, 100, -1000)},
-    {min = 2200, quest = "CakeQuest", id = 1, mob = "Cake Guard", pos = Vector3.new(-1150, 70, -2500)},
-    {min = 2300, quest = "CakeQuest", id = 2, mob = "Baking Staff", pos = Vector3.new(-1150, 70, -2500)},
-    {min = 2400, quest = "ChocolateQuest1", id = 1, mob = "Cocoa Warrior", pos = Vector3.new(200, 50, 400)},
-    {min = 2500, quest = "CandyQuest1", id = 1, mob = "Candy Pirate", pos = Vector3.new(800, 50, 1200)}
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main Farm", Icon = "home" }),
+    Combat = Window:AddTab({ Title = "Combat", Icon = "sword" }),
+    Stats = Window:AddTab({ Title = "Stats", Icon = "bar-chart" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "settings" })
 }
 
+local Config = {
+    AutoFarm = false,
+    BringMob = false,
+    FastAttack = false,
+    GodMode = false,
+    NoCooldown = false,
+    InfiniteJump = false,
+    WalkOnWater = false,
+    AutoStats = false,
+    SelectedStat = "Melee",
+    FruitSniper = false
+}
+
+local Quests = {
+    [1] = {
+        {Level = 0, Name = "Bandit", QuestName = "BanditQuest1", Pos = Vector3.new(1059, 15, 1550)},
+        {Level = 10, Name = "Monkey", QuestName = "JungleQuest", Pos = Vector3.new(-1598, 37, 153)},
+        {Level = 15, Name = "Gorilla", QuestName = "JungleQuest", Pos = Vector3.new(-1204, 51, -452)}
+    },
+    [2] = {
+        {Level = 700, Name = "Raider", QuestName = "Area1Quest", Pos = Vector3.new(-424, 73, 1836)},
+        {Level = 725, Name = "Mercenary", QuestName = "Area1Quest", Pos = Vector3.new(-795, 73, 1554)}
+    },
+    [3] = {
+        {Level = 1500, Name = "Pirate Millionaire", QuestName = "FloatingTurtleQuest1", Pos = Vector3.new(-11489, 4, 3830)}
+    }
+}
+
+function GetQuest()
+    local myLevel = game.Players.LocalPlayer.Data.Level.Value
+    local currentSea = 1
+    if game.PlaceId == 4442245229 then currentSea = 2 elseif game.PlaceId == 7449925010 then currentSea = 3 end
+    local selectedQuest = nil
+    for _, q in pairs(Quests[currentSea]) do
+        if myLevel >= q.Level then selectedQuest = q end
+    end
+    return selectedQuest
+end
+
 task.spawn(function()
-    while task.wait(0.5) do
-        if _G.AutoFarm and hrp then
-            pcall(function()
-                local q
-                local lvl = Data.Level.Value
-                for i = #QuestList, 1, -1 do if lvl >= QuestList[i].min then q = QuestList[i] break end end
-                if not Player.PlayerGui.Main.Quest.Visible then
-                    TP(q.pos)
-                    ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", q.quest, q.id)
-                else
-                    local enemyFound = false
-                    for _, v in pairs(Workspace.Enemies:GetChildren()) do
-                        if v.Name == q.mob and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                            enemyFound = true
-                            if _G.BringMob then
-                                v.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0, 0, -8)
-                                v.HumanoidRootPart.CanCollide = false
-                            end
-                            hrp.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 11, 0)
+    while task.wait() do
+        pcall(function()
+            if Config.AutoFarm then
+                local quest = GetQuest()
+                if quest then
+                    if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", quest.QuestName, 1)
+                    end
+                    for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                        if v.Name == quest.Name and v:FindFirstChild("HumanoidRootPart") then
+                            repeat
+                                task.wait()
+                                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 7, 0)
+                                if Config.BringMob then
+                                    for _, mob in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                                        if mob.Name == quest.Name then
+                                            mob.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame
+                                            mob.HumanoidRootPart.CanCollide = false
+                                        end
+                                    end
+                                end
+                            until not Config.AutoFarm or v.Humanoid.Health <= 0
                         end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    game:GetService("RunService").RenderStepped:Connect(function()
+        pcall(function()
+            if Config.FastAttack then
+                local VirtualUser = game:GetService("VirtualUser")
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton1(Vector2.new(851, 158), game.Workspace.CurrentCamera.CFrame)
+            end
+        end)
+    end)
+end)
+
+task.spawn(function()
+    while task.wait() do
+        if Config.GodMode then
+            pcall(function()
+                game.Players.LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                        if v:IsA("BasePart") then v.CanTouch = false end
                     end
                 end
             end)
@@ -136,93 +114,44 @@ task.spawn(function()
     end
 end)
 
-local MainTab = Window:CreateTab("Auto Farm")
-MainTab:CreateToggle({
-   Name = "Auto Farm Level",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoFarm = Value end
-})
-MainTab:CreateToggle({
-   Name = "Gom Quái (Bring Mob)",
-   CurrentValue = true,
-   Callback = function(Value) _G.BringMob = Value end
-})
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if Config.InfiniteJump then
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
 
-local FruitTab = Window:CreateTab("Trái Ác Quỷ")
-FruitTab:CreateButton({
-   Name = "Nhặt Trái & Hop Server",
-   Callback = function()
-        for _, v in pairs(Workspace:GetChildren()) do
-            if v:IsA("Tool") and (v.Name:find("Fruit") or v:FindFirstChild("Handle")) then
-                hrp.CFrame = v.Handle.CFrame
-                task.wait(1)
-                ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", v.Name, v)
+Tabs.Main:AddToggle("AutoFarm", {Title = "Auto Farm Level", Default = false}):OnChanged(function(Value) Config.AutoFarm = Value end)
+Tabs.Main:AddToggle("BringMob", {Title = "Bring Mob", Default = false}):OnChanged(function(Value) Config.BringMob = Value end)
+Tabs.Main:AddToggle("FastAttack", {Title = "Fast Attack (No Delay)", Default = false}):OnChanged(function(Value) Config.FastAttack = Value end)
+
+Tabs.Combat:AddToggle("GodMode", {Title = "God Mode", Default = false}):OnChanged(function(Value) Config.GodMode = Value end)
+Tabs.Combat:AddToggle("NoCooldown", {Title = "No Cooldown Skill", Default = false}):OnChanged(function(Value) Config.NoCooldown = Value end)
+
+Tabs.Stats:AddDropdown("StatSelect", {
+    Title = "Select Stat",
+    Values = {"Melee", "Defense", "Sword", "Gun", "Demon Fruit"},
+    Default = "Melee",
+    Callback = function(Value) Config.SelectedStat = Value end
+})
+Tabs.Stats:AddToggle("AutoStats", {Title = "Auto Stats", Default = false}):OnChanged(function(Value) Config.AutoStats = Value end)
+
+Tabs.Misc:AddButton({
+    Title = "Server Hop",
+    Callback = function()
+        local Http = game:GetService("HttpService")
+        local TPS = game:GetService("TeleportService")
+        local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+        local function NextServer()
+            local Result = Http:JSONDecode(game:HttpGet(Api))
+            for _, server in pairs(Result.data) do
+                if server.playing < server.maxPlayers then
+                    TPS:TeleportToPlaceInstance(game.PlaceId, server.id)
+                    break
+                end
             end
         end
-        local s = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
-        for _, v in pairs(s.data) do
-            if v.playing < v.maxPlayers and v.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, v.id)
-                break
-            end
-        end
-   end
-})
-
-local MoveTab = Window:CreateTab("Tiện Ích")
-MoveTab:CreateSlider({
-   Name = "Tốc Độ Chạy",
-   Range = {16, 500},
-   Increment = 1,
-   CurrentValue = 165,
-   Callback = function(Value) _G.Speed = Value end
-})
-MoveTab:CreateToggle({
-   Name = "Nhảy Vô Hạn",
-   CurrentValue = true,
-   Callback = function(Value) _G.InfiniteJump = Value end
-})
-MoveTab:CreateToggle({
-   Name = "Đứng Trên Nước",
-   CurrentValue = true,
-   Callback = function(Value) _G.WalkOnWater = Value end
-})
-
-task.spawn(function()
-    while task.wait() do
-        pcall(function()
-            if char:FindFirstChild("Humanoid") then char.Humanoid.WalkSpeed = _G.Speed end
-        end)
+        NextServer()
     end
-end)
+})
 
-UserInputService.JumpRequest:Connect(function()
-    if _G.InfiniteJump and char:FindFirstChild("Humanoid") then
-        char.Humanoid:ChangeState("Jumping")
-    end
-end)
-
-task.spawn(function()
-   while task.wait(0.5) do
-      if _G.WalkOnWater then
-         pcall(function()
-            for _, v in pairs(Workspace:GetDescendants()) do
-               if v.Name == "Water" or v.Name == "Sea" or v.Name == "Ocean" then v.CanCollide = true end
-            end
-         end)
-      end
-   end
-end)
-
-task.spawn(function()
-    while true do
-        pcall(function()
-            VirtualUser:Button1Down(Vector2.new())
-            task.wait(1)
-            VirtualUser:Button1Up(Vector2.new())
-        end)
-        task.wait(60)
-    end
-end)
-
-Rayfield:Notify({Title = "XONG!", Content = "Bản ULTRA Mobile đã sẵn sàng 😈", Duration = 5})
+Window:SelectTab(1)
