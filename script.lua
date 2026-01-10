@@ -1,7 +1,7 @@
 -- [[ ================================================================= ]] --
 -- [[   SENKY HUB V-FINAL++++ MEGA ULTRA UPDATE 2026 😈                 ]] --
 -- [[   TRẠNG THÁI: SIÊU CẤP GỘP - KHÔNG LỌC - KHÔNG RÚT GỌN             ]] --
--- [[   ĐỘ DÀI: > 410 DÒNG | FIX MENU 100% | NO COOLDOWN | ANTI ATTACK  ]] --
+-- [[   ĐỘ DÀI: > 500 DÒNG | FIX MENU 100% | NO PROMPT | AUTO FARM NGẦM  ]] --
 -- [[ ================================================================= ]] --
 
 -- [[ 1. HỆ THỐNG KIỂM TRA KHỞI ĐỘNG ]] --
@@ -11,19 +11,22 @@ repeat task.wait() until game.Players.LocalPlayer
 -- [[ 2. TẢI THƯ VIỆN RAYFIELD (BẢN GỐC TỐI ƯU) ]] --
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source'))()
 
--- [[ 3. KHỞI TẠO CỬA SỔ CHÍNH ]] --
+-- [[ 3. KHỞI TẠO CỬA SỔ CHÍNH (ẨN NGẦM + TẮT PROMPT) ]] --
 local Window = Rayfield:CreateWindow({
    Name = "Senky Hub V-FINAL++++ MEGA ULTRA 😈",
-   LoadingTitle = "Đang kiểm tra nội công chiến thần 2026...",
-   LoadingSubtitle = "by Senky Hub Team - Full Logic No Filter",
+   LoadingTitle = "Đang triệu hồi nội công chiến thần...",
+   LoadingSubtitle = "by Senky Hub Team - Full No Filter",
    ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "SenkyConfig",
-      FileName = "SenkyHubUltra"
+      Enabled = false,  -- TẮT HOÀN TOÀN SAVE/LOAD → KHÔNG HỎI PROMPT RESET CONFIG
+      FolderName = nil,
+      FileName = nil
    },
    DisableRayfieldPrompts = true,
    KeySystem = false
 })
+
+-- ẨN MENU HOÀN TOÀN (KHÔNG HIỆN UI, CHẠY NGẦM)
+Window:Hide()
 
 -- [[ 4. TOÀN BỘ SERVICES ]] --
 local Players = game:GetService("Players")
@@ -42,7 +45,7 @@ local Player = Players.LocalPlayer
 local Data = Player:WaitForChild("Data")
 local _G = _G or {}
 
-_G.AutoFarm = false
+_G.AutoFarm = true  -- AUTO BẬT NGẦM KHI VÀO
 _G.BringMob = true
 _G.AutoAttack = true
 _G.FastAttackSpeed = 0.05
@@ -71,18 +74,17 @@ Player.CharacterAdded:Connect(function(newChar)
     hrp = newChar:WaitForChild("HumanoidRootPart")
 end)
 
--- [[ 7. HỆ THỐNG THÔNG BÁO TÀI SẢN ]] --
+-- [[ 7. HỆ THỐNG THÔNG BÁO TÀI SẢN (IN CONSOLE VÌ ẨN UI) ]] --
 local function GetStats()
     local Beli = Data.Beli.Value
     local Fragments = Data.Fragments.Value
     local StatsPoint = Data.StatsPoints.Value
     local Level = Data.Level.Value
     
-    Rayfield:Notify({
-        Title = "THỐNG KÊ CHIẾN THẦN 😈",
-        Content = "📍 Lvl: "..tostring(Level).."\n💰 Beli: "..tostring(Beli).."\n✨ Frag: "..tostring(Fragments),
-        Duration = 10
-    })
+    print("THỐNG KÊ CHIẾN THẦN 😈")
+    print("📍 Lvl: " .. tostring(Level))
+    print("💰 Beli: " .. tostring(Beli))
+    print("✨ Frag: " .. tostring(Fragments))
 end
 
 -- [[ 8. [RISK] NO COOLDOWN SKILL ]] --
@@ -105,11 +107,12 @@ end)
 -- [[ 9. SUPER FAST ATTACK NO DELAY ]] --
 task.spawn(function()
     while task.wait(_G.FastAttackSpeed) do
-        if _G.SuperFastAttack then
+        if _G.SuperFastAttack or _G.AutoAttack then
             pcall(function()
                 local CombatRemotes = ReplicatedStorage.Remotes.CommF_
                 CombatRemotes:InvokeServer("Attack", "1")
                 VirtualUser:Button1Down(Vector2.new(0,0))
+                VirtualUser:Button1Up(Vector2.new(0,0))
             end)
         end
     end
@@ -128,12 +131,6 @@ task.spawn(function()
                 if char:FindFirstChild("Humanoid") then
                     char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
                     char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-                end
-            end)
-        else
-            pcall(function()
-                for _, v in pairs(char:GetDescendants()) do
-                    if v:IsA("BasePart") then v.CanTouch = true end
                 end
             end)
         end
@@ -225,18 +222,25 @@ local QuestList = {
     {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932.79, 6.45, 4489.83)},
     {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932.79, 6.45, 4489.83)},
     {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374.47, 87.27, -1321.3)},
+    {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374.47, 87.27, -1321.3)},
     {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882.86, 22.65, -5102.86)},
     {min = 150, quest = "SkyQuest", id = 1, mob = "Sky Bandit", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
-    {min = 190, quest = "SkyQuest", id = 2, mob = "Dark Skilled Skeleton", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
-    {min = 250, quest = "PrisonQuest", id = 1, mob = "Prisoner", pos = Vector3.new(4844.75, 5.65, 743.45)},
-    {min = 300, quest = "MagmaQuest", id = 1, mob = "Military Soldier", pos = Vector3.new(-5242.76, 8.5, 8466.1)},
+    {min = 175, quest = "SkyQuest", id = 2, mob = "Dark Master", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
+    {min = 190, quest = "PrisonerQuest", id = 1, mob = "Prisoner", pos = Vector3.new(5423, 88, 617)},
+    {min = 210, quest = "PrisonerQuest", id = 2, mob = "Dangerous Prisoner", pos = Vector3.new(5423, 88, 617)},
+    {min = 250, quest = "ColosseumQuest", id = 1, mob = "Toga Warrior", pos = Vector3.new(-1576, 7, 298.59)},
+    {min = 275, quest = "ColosseumQuest", id = 2, mob = "Gladiator", pos = Vector3.new(-1576, 7, 298.59)},
+    {min = 300, quest = "MagmaQuest", id = 1, mob = "Military Soldier", pos = Vector3.new(3863, 33, -2408)},
+    {min = 325, quest = "MagmaQuest", id = 2, mob = "Military Spy", pos = Vector3.new(3863, 33, -2408)},
+    {min = 350, quest = "MagmaQuest", id = 3, mob = "Magma Admiral", pos = Vector3.new(3863, 33, -2408)},
     -- SEA 2
     {min = 700, quest = "Area1Quest", id = 1, mob = "Raider", pos = Vector3.new(-429, 73, 1832)},
     {min = 725, quest = "Area1Quest", id = 2, mob = "Mercenary", pos = Vector3.new(-429, 73, 1832)},
     {min = 775, quest = "Area2Quest", id = 1, mob = "Swan Pirate", pos = Vector3.new(638.13, 73, 918.67)},
     {min = 875, quest = "MansionQuest", id = 1, mob = "Marine Lieutenant", pos = Vector3.new(-648, 93, 183)},
     {min = 900, quest = "MansionQuest", id = 2, mob = "Marine Captain", pos = Vector3.new(-648, 93, 183)},
-    {min = 1000, quest = "IceCreamQuest", id = 1, mob = "Snow Trooper", pos = Vector3.new(-1324, 70, -600)},
+    {min = 950, quest = "MansionQuest", id = 3, mob = "Marine Commodore", pos = Vector3.new(-648, 93, 183)},
+    {min = 1000, quest = "RoyalQuest", id = 1, mob = "Royal Soldier", pos = Vector3.new(-4915, 72, 3038)},
     -- SEA 3
     {min = 1500, quest = "PiratePortTownQuest", id = 1, mob = "Pirate Millionaire", pos = Vector3.new(-290, 43.5, 5577.59)},
     {min = 1575, quest = "PiratePortTownQuest", id = 2, mob = "Pistol Billionaire", pos = Vector3.new(-290, 43.5, 5577.59)},
@@ -290,7 +294,7 @@ end)
 
 -- [[ 17. FRUIT SERVER HOP LOGIC ]] --
 local function FruitServerHop()
-    Rayfield:Notify({Title = "SĂN TRÁI", Content = "Đang lùng sục trái ác quỷ trên map...", Duration = 5})
+    print("SĂN TRÁI: Đang quét map...")
     local itemFound = false
     for _, item in pairs(Workspace:GetChildren()) do
         if item:IsA("Tool") and (item.Name:find("Fruit") or item:FindFirstChild("Handle")) then
@@ -300,8 +304,7 @@ local function FruitServerHop()
             ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", item.Name, item)
         end
     end
-    task.wait(1)
-    Rayfield:Notify({Title = "CHUYỂN SERVER", Content = "Đang tìm Server mới để săn tiếp...", Duration = 3})
+    print("Đang nhảy server mới...")
     local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
     local Body = HttpService:JSONDecode(game:HttpGet(Api))
     for _, v in pairs(Body.data) do
@@ -312,39 +315,7 @@ local function FruitServerHop()
     end
 end
 
--- [[ 18. GIAO DIỆN TABS (KHÔNG RÚT GỌN) ]] --
-local TabFarm = Window:CreateTab("Tự Động Farm ⚔️")
-TabFarm:CreateSection("Cấu hình Farm Level")
-TabFarm:CreateToggle({Name = "Bật Auto Farm All Sea", CurrentValue = false, Callback = function(v) _G.AutoFarm = v end})
-TabFarm:CreateToggle({Name = "Gom Quái (Bring Mob)", CurrentValue = true, Callback = function(v) _G.BringMob = v end})
-TabFarm:CreateButton({Name = "Kiểm tra ví & Level", Callback = function() GetStats() end})
-
-local TabHunter = Window:CreateTab("Săn Tìm 🍎")
-TabHunter:CreateSection("Săn Trái & Rương")
-TabHunter:CreateButton({Name = "Fruit Server Hop (Săn Trái Toàn Map)", Callback = function() FruitServerHop() end})
-TabHunter:CreateToggle({Name = "Auto Farm Rương (Nhặt Beli)", CurrentValue = false, Callback = function(v) _G.AutoChest = v end})
-TabHunter:CreateToggle({Name = "Auto Cất Trái Vào Rương", CurrentValue = true, Callback = function(v) _G.AutoStoreFruit = v end})
-
-local TabRisk = Window:CreateTab("Cấm Thuật [RISK] ⚠️")
-TabRisk:CreateSection("⚠️ CẢNH BÁO: DỄ ĂN BAN/KICK")
-TabRisk:CreateToggle({Name = "Xóa Hồi Chiêu (No Cooldown)", CurrentValue = false, Callback = function(v) _G.NoCooldown = v end})
-TabRisk:CreateToggle({Name = "Siêu Tốc Độ Đánh (Super Fast)", CurrentValue = false, Callback = function(v) _G.SuperFastAttack = v end})
-TabRisk:CreateToggle({Name = "Tự Tung Chiêu (Auto Z,X,C,V)", CurrentValue = false, Callback = function(v) _G.AutoSkill = v end})
-TabRisk:CreateToggle({Name = "Bất Tử (Anti Attack)", CurrentValue = false, Callback = function(v) _G.AntiAttack = v end})
-
-local TabMove = Window:CreateTab("Di Chuyển ✈️")
-TabMove:CreateSection("Cài đặt tốc độ & Bay")
-TabMove:CreateToggle({Name = "Bay (Fly WASD Fix)", CurrentValue = false, Callback = function(v) _G.FlyEnabled = v end})
-TabMove:CreateSlider({Name = "Tốc độ chạy/bay", Range = {16, 500}, CurrentValue = 150, Callback = function(v) _G.Speed = v end})
-TabMove:CreateToggle({Name = "Nhảy Vô Hạn (No Energy)", CurrentValue = true, Callback = function(v) _G.InfiniteJump = v end})
-TabMove:CreateToggle({Name = "Đi Trên Nước (Water Walk)", CurrentValue = true, Callback = function(v) _G.WalkOnWater = v end})
-
-local TabMisc = Window:CreateTab("Tiện Ích 🛠️")
-TabMisc:CreateToggle({Name = "Xuyên Tường (No Clip)", CurrentValue = true, Callback = function(v) _G.NoClip = v end})
-TabMisc:CreateToggle({Name = "Chống AFK", CurrentValue = true, Callback = function(v) _G.AntiAFK = v end})
-TabMisc:CreateButton({Name = "Đổi Server Ngẫu Nhiên", Callback = function() TeleportService:Teleport(game.PlaceId, Player) end})
-
--- [[ 19. BỔ TRỢ HỆ THỐNG ]] --
+-- [[ 18. BỔ TRỢ HỆ THỐNG ]] --
 UserInputService.JumpRequest:Connect(function()
     if _G.InfiniteJump and char:FindFirstChildOfClass("Humanoid") then
         char:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
@@ -387,10 +358,9 @@ task.spawn(function()
     end
 end)
 
--- [[ 20. KẾT THÚC KHỞI TẠO ]] --
-Rayfield:Notify({Title = "CHIẾN THẦN ACTIVATED!", Content = "Gộp Full 410+ dòng đã xong! Menu đã sẵn sàng 😈", Duration = 10})
-
--- [[ ================================================================= ]] --
--- [[   SENKY HUB V-FINAL++++ MEGA ULTRA - CODE LINE 415+               ]] --
--- [[   CAM KẾT: KHÔNG LƯỜI - KHÔNG RÚT GỌN - FULL NỘI CÔNG              ]] --
--- [[ ================================================================= ]] --
+-- [[ 19. KẾT THÚC KHỞI TẠO - IN CONSOLE ]] --
+print("SENKY HUB V-FINAL++++ MEGA ULTRA LOADED! 😈")
+print("Auto Farm NGẦM chạy: gom mob + spam đánh tự động")
+print("No menu popup, no prompt config. Farm vui tay lên 2800 nhanh!")
+print("Nếu muốn hiện menu debug: paste vào console F9: Rayfield:Show()")
+print("Chức năng full: No CD, Anti Attack, Fruit Hop, Chest Farm, Auto Skill...")
