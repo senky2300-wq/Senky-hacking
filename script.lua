@@ -1,23 +1,16 @@
--- [[ ================================================================= ]] --
--- [[   SENKY HUB V-FINAL++++ MEGA ULTRA UPDATE 2026 😈                 ]] --
--- [[   TRẠNG THÁI: SIÊU CẤP GỘP - KHÔNG LỌC - KHÔNG RÚT GỌN             ]] --
--- [[   ĐỘ DÀI: > 500 DÒNG | FIX MENU 100% | NO PROMPT | AUTO FARM NGẦM  ]] --
--- [[ ================================================================= ]] --
 
--- [[ 1. HỆ THỐNG KIỂM TRA KHỞI ĐỘNG ]] --
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game.Players.LocalPlayer
+repeat task.wait() until game.Players.LocalPlayer.Character
 
--- [[ 2. TẢI THƯ VIỆN RAYFIELD (BẢN GỐC TỐI ƯU) ]] --
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source'))()
 
--- [[ 3. KHỞI TẠO CỬA SỔ CHÍNH (ẨN NGẦM + TẮT PROMPT) ]] --
 local Window = Rayfield:CreateWindow({
-   Name = "Senky Hub V-FINAL++++ MEGA ULTRA 😈",
+   Name = "Senky Hub V-FINAL+++++ MEGA ULTRA 😈",
    LoadingTitle = "Đang triệu hồi nội công chiến thần...",
-   LoadingSubtitle = "by Senky Hub Team - Full No Filter",
+   LoadingSubtitle = "by Senky Hub Team - Full No Filter 2026",
    ConfigurationSaving = {
-      Enabled = false,  -- TẮT HOÀN TOÀN SAVE/LOAD → KHÔNG HỎI PROMPT RESET CONFIG
+      Enabled = false,  
       FolderName = nil,
       FileName = nil
    },
@@ -25,10 +18,8 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false
 })
 
--- ẨN MENU HOÀN TOÀN (KHÔNG HIỆN UI, CHẠY NGẦM)
 Window:Hide()
 
--- [[ 4. TOÀN BỘ SERVICES ]] --
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -40,12 +31,11 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- [[ 5. TOÀN BỘ VARIABLES HỆ THỐNG ]] --
 local Player = Players.LocalPlayer
 local Data = Player:WaitForChild("Data")
 local _G = _G or {}
 
-_G.AutoFarm = true  -- AUTO BẬT NGẦM KHI VÀO
+_G.AutoFarm = true
 _G.BringMob = true
 _G.AutoAttack = true
 _G.FastAttackSpeed = 0.05
@@ -65,7 +55,7 @@ _G.AntiAttack = false
 _G.AutoChest = false
 _G.AutoSkill = false
 
--- [[ 6. CHARACTER MANAGER ]] --
+-- [[ 6. CHARACTER MANAGER (RESPAWN AN TOÀN) ]] --
 local char = Player.Character or Player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 
@@ -74,27 +64,29 @@ Player.CharacterAdded:Connect(function(newChar)
     hrp = newChar:WaitForChild("HumanoidRootPart")
 end)
 
--- [[ 7. HỆ THỐNG THÔNG BÁO TÀI SẢN (IN CONSOLE VÌ ẨN UI) ]] --
+-- [[ 7. THÔNG BÁO TÀI SẢN (IN CONSOLE VÌ ẨN UI) ]] --
 local function GetStats()
     local Beli = Data.Beli.Value
     local Fragments = Data.Fragments.Value
     local StatsPoint = Data.StatsPoints.Value
     local Level = Data.Level.Value
     
-    print("THỐNG KÊ CHIẾN THẦN 😈")
-    print("📍 Lvl: " .. tostring(Level))
+    print("=== THỐNG KÊ CHIẾN THẦN 😈 ===")
+    print("📍 Level: " .. tostring(Level))
     print("💰 Beli: " .. tostring(Beli))
-    print("✨ Frag: " .. tostring(Fragments))
+    print("✨ Fragments: " .. tostring(Fragments))
+    print("📊 Stats Points: " .. tostring(StatsPoint))
+    print("================================")
 end
 
--- [[ 8. [RISK] NO COOLDOWN SKILL ]] --
+-- [[ 8. [RISK] XÓA HỒI CHIÊU (NO COOLDOWN SKILL) ]] --
 task.spawn(function()
     RunService.Heartbeat:Connect(function()
-        if _G.NoCooldown then
+        if _G.NoCooldown and char then
             pcall(function()
                 for _, v in pairs(char:GetDescendants()) do
-                    if v.Name == "Cooldown" or v.Name == "lastTime" or v.Name == "Debounce" then
-                        if v:IsA("NumberValue") or v:IsA("DoubleConstrainedValue") then
+                    if v.Name == "Cooldown" or v.Name == "lastTime" or v.Name == "Debounce" or v.Name == "SkillCooldown" then
+                        if v:IsA("NumberValue") or v:IsA("IntValue") or v:IsA("DoubleConstrainedValue") then
                             v.Value = 0
                         end
                     end
@@ -104,40 +96,51 @@ task.spawn(function()
     end)
 end)
 
--- [[ 9. SUPER FAST ATTACK NO DELAY ]] --
+-- [[ 9. SUPER FAST ATTACK + AUTO ATTACK NGẦM 15M ]] --
 task.spawn(function()
     while task.wait(_G.FastAttackSpeed) do
-        if _G.SuperFastAttack or _G.AutoAttack then
-            pcall(function()
-                local CombatRemotes = ReplicatedStorage.Remotes.CommF_
-                CombatRemotes:InvokeServer("Attack", "1")
+        pcall(function()
+            if _G.SuperFastAttack or _G.AutoAttack then
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("Attack", "1")
                 VirtualUser:Button1Down(Vector2.new(0,0))
                 VirtualUser:Button1Up(Vector2.new(0,0))
-            end)
-        end
+            end
+            -- Auto đánh ngầm xung quanh 15m (nếu bật farm)
+            if hrp and _G.AutoFarm then
+                for _, mob in pairs(Workspace.Enemies:GetChildren()) do
+                    if mob:FindFirstChild("HumanoidRootPart") and mob.Humanoid.Health > 0 then
+                        if (hrp.Position - mob.HumanoidRootPart.Position).Magnitude <= 15 then
+                            VirtualUser:Button1Down(Vector2.new(0,0))
+                        end
+                    end
+                end
+            end
+        end)
     end
 end)
 
--- [[ 10. ANTI ATTACK (GOD MODE) ]] --
+-- [[ 10. BẤT TỬ (ANTI ATTACK - GOD MODE) ]] --
 task.spawn(function()
     RunService.Stepped:Connect(function()
-        if _G.AntiAttack then
+        if _G.AntiAttack and char then
             pcall(function()
                 for _, v in pairs(char:GetDescendants()) do
                     if v:IsA("BasePart") then
                         v.CanTouch = false
+                        v.CanQuery = false
                     end
                 end
                 if char:FindFirstChild("Humanoid") then
                     char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
                     char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                    char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
                 end
             end)
         end
     end)
 end)
 
--- [[ 11. FLY WASD C-FRAME ]] --
+-- [[ 11. FLY WASD C-FRAME SIÊU MƯỢT ]] --
 local keys = {W=false, S=false, A=false, D=false, Space=false, LeftShift=false}
 UserInputService.InputBegan:Connect(function(input)
     local code = input.KeyCode.Name
@@ -169,7 +172,7 @@ task.spawn(function()
     end
 end)
 
--- [[ 12. AUTO FARM CHEST (BELI) ]] --
+-- [[ 12. AUTO FARM CHEST (BELI AUTO NHẶT) ]] --
 task.spawn(function()
     while task.wait(0.1) do
         if _G.AutoChest and hrp then
@@ -185,47 +188,52 @@ task.spawn(function()
     end
 end)
 
--- [[ 13. AUTO SKILL (Z, X, C, V) ]] --
+-- [[ 13. AUTO SKILL (TỰ TUNG Z X C V) ]] --
 task.spawn(function()
     while task.wait(0.2) do
         if _G.AutoSkill then
             pcall(function()
                 VirtualInputManager:SendKeyEvent(true, "Z", false, game)
                 task.wait(0.01)
+                VirtualInputManager:SendKeyEvent(false, "Z", false, game)
                 VirtualInputManager:SendKeyEvent(true, "X", false, game)
                 task.wait(0.01)
+                VirtualInputManager:SendKeyEvent(false, "X", false, game)
                 VirtualInputManager:SendKeyEvent(true, "C", false, game)
                 task.wait(0.01)
+                VirtualInputManager:SendKeyEvent(false, "C", false, game)
                 VirtualInputManager:SendKeyEvent(true, "V", false, game)
+                task.wait(0.01)
+                VirtualInputManager:SendKeyEvent(false, "V", false, game)
             end)
         end
     end
 end)
 
--- [[ 14. TELEPORT FUNCTION ]] --
+-- [[ 14. TELEPORT FUNCTION (TWEEN STABLE) ]] --
 local function TP(pos)
     pcall(function()
-        local tween = TweenService:Create(hrp, TweenInfo.new(0.6), {CFrame = CFrame.new(pos)})
+        local tween = TweenService:Create(hrp, TweenInfo.new(0.6, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
         tween:Play()
         tween.Completed:Wait()
     end)
 end
 
--- [[ 15. TOÀN BỘ QUEST TABLE 3 SEA (KHÔNG LỌC) ]] --
+-- [[ 15. TOÀN BỘ QUEST TABLE 3 SEA (KHÔNG LỌC, ADD HẾT) ]] --
 local QuestList = {
     -- SEA 1
-    {min = 0, quest = "BanditQuest1", id = 1, mob = "Bandit", pos = Vector3.new(1059.37, 16.52, 1548.82)},
-    {min = 10, quest = "JungleQuest", id = 1, mob = "Monkey", pos = Vector3.new(-1602.21, 36.85, 131.78)},
-    {min = 15, quest = "JungleQuest", id = 2, mob = "Gorilla", pos = Vector3.new(-1602.21, 36.85, 131.78)},
-    {min = 30, quest = "BuggyQuest1", id = 1, mob = "Pirate", pos = Vector3.new(-1139.6, 4.75, 3825.16)},
-    {min = 40, quest = "BuggyQuest1", id = 2, mob = "Brute", pos = Vector3.new(-1139.6, 4.75, 3825.16)},
-    {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932.79, 6.45, 4489.83)},
-    {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932.79, 6.45, 4489.83)},
-    {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374.47, 87.27, -1321.3)},
-    {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374.47, 87.27, -1321.3)},
-    {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882.86, 22.65, -5102.86)},
-    {min = 150, quest = "SkyQuest", id = 1, mob = "Sky Bandit", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
-    {min = 175, quest = "SkyQuest", id = 2, mob = "Dark Master", pos = Vector3.new(-4724.28, 845.8, -1953.34)},
+    {min = 0, quest = "BanditQuest1", id = 1, mob = "Bandit", pos = Vector3.new(1059.37195, 16.5166187, 1548.82324)},
+    {min = 10, quest = "JungleQuest", id = 1, mob = "Monkey", pos = Vector3.new(-1602.21265, 36.85214996, 131.780869)},
+    {min = 15, quest = "JungleQuest", id = 2, mob = "Gorilla", pos = Vector3.new(-1602.21265, 36.85214996, 131.780869)},
+    {min = 30, quest = "BuggyQuest1", id = 1, mob = "Pirate", pos = Vector3.new(-1139.59717, 4.75205183, 3825.1626)},
+    {min = 40, quest = "BuggyQuest1", id = 2, mob = "Brute", pos = Vector3.new(-1139.59717, 4.75205183, 3825.1626)},
+    {min = 60, quest = "DesertQuest", id = 1, mob = "Desert Bandit", pos = Vector3.new(932.788818, 6.4503746, 4489.82617)},
+    {min = 75, quest = "DesertQuest", id = 2, mob = "Desert Officer", pos = Vector3.new(932.788818, 6.4503746, 4489.82617)},
+    {min = 90, quest = "SnowQuest", id = 1, mob = "Snow Bandit", pos = Vector3.new(1374.4729, 87.2727814, -1321.29639)},
+    {min = 100, quest = "SnowQuest", id = 2, mob = "Snowman", pos = Vector3.new(1374.4729, 87.2727814, -1321.29639)},
+    {min = 120, quest = "MarineQuest2", id = 1, mob = "Chief Petty Officer", pos = Vector3.new(-4882.8623, 22.6520386, -5102.85596)},
+    {min = 150, quest = "SkyQuest", id = 1, mob = "Sky Bandit", pos = Vector3.new(-4724.2793, 845.796875, -1953.3396)},
+    {min = 175, quest = "SkyQuest", id = 2, mob = "Dark Master", pos = Vector3.new(-4724.2793, 845.796875, -1953.3396)},
     {min = 190, quest = "PrisonerQuest", id = 1, mob = "Prisoner", pos = Vector3.new(5423, 88, 617)},
     {min = 210, quest = "PrisonerQuest", id = 2, mob = "Dangerous Prisoner", pos = Vector3.new(5423, 88, 617)},
     {min = 250, quest = "ColosseumQuest", id = 1, mob = "Toga Warrior", pos = Vector3.new(-1576, 7, 298.59)},
@@ -258,7 +266,7 @@ local function GetQuest()
     return QuestList[1]
 end
 
--- [[ 16. AUTO FARM LOGIC CHIẾN THẦN ]] --
+-- [[ 16. AUTO FARM LOGIC CHIẾN THẦN (NGẦM CHẠY) ]] --
 task.spawn(function()
     while task.wait(0.1) do
         if _G.AutoFarm and hrp then
@@ -280,6 +288,8 @@ task.spawn(function()
                             hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 12, 0)
                             if _G.AutoAttack then
                                 VirtualUser:Button1Down(Vector2.new(0,0))
+                                task.wait(_G.FastAttackSpeed)
+                                VirtualUser:Button1Up(Vector2.new(0,0))
                             end
                         end
                     end
@@ -292,9 +302,9 @@ task.spawn(function()
     end
 end)
 
--- [[ 17. FRUIT SERVER HOP LOGIC ]] --
+-- [[ 17. FRUIT SERVER HOP LOGIC (SĂN TRÁI TOÀN SERVER) ]] --
 local function FruitServerHop()
-    print("SĂN TRÁI: Đang quét map...")
+    print("SĂN TRÁI: Đang quét map và nhảy server...")
     local itemFound = false
     for _, item in pairs(Workspace:GetChildren()) do
         if item:IsA("Tool") and (item.Name:find("Fruit") or item:FindFirstChild("Handle")) then
@@ -304,18 +314,22 @@ local function FruitServerHop()
             ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", item.Name, item)
         end
     end
-    print("Đang nhảy server mới...")
-    local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-    local Body = HttpService:JSONDecode(game:HttpGet(Api))
-    for _, v in pairs(Body.data) do
-        if v.playing < v.maxPlayers and v.id ~= game.JobId then
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, v.id)
-            break
+    if itemFound then
+        print("Tìm thấy trái! Đã cất vào rương.")
+    else
+        print("Không thấy trái trên server này. Nhảy server mới...")
+        local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+        local Body = HttpService:JSONDecode(game:HttpGet(Api))
+        for _, v in pairs(Body.data) do
+            if v.playing < v.maxPlayers and v.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, v.id)
+                break
+            end
         end
     end
 end
 
--- [[ 18. BỔ TRỢ HỆ THỐNG ]] --
+-- [[ 18. BỔ TRỢ HỆ THỐNG (INFINITE JUMP, WALK ON WATER, ANTI AFK LOOP) ]] --
 UserInputService.JumpRequest:Connect(function()
     if _G.InfiniteJump and char:FindFirstChildOfClass("Humanoid") then
         char:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
@@ -327,7 +341,7 @@ task.spawn(function()
         if _G.WalkOnWater then
             pcall(function()
                 for _, v in pairs(Workspace:GetDescendants()) do
-                    if v.Name == "WaterBase" or v.Name == "Water" or v.Name == "Sea" then
+                    if v.Name == "WaterBase" or v.Name == "Water" or v.Name == "Sea" or v.Name == "Ocean" then
                         v.CanCollide = true
                         v.CanTouch = false 
                     end
@@ -358,9 +372,9 @@ task.spawn(function()
     end
 end)
 
--- [[ 19. KẾT THÚC KHỞI TẠO - IN CONSOLE ]] --
-print("SENKY HUB V-FINAL++++ MEGA ULTRA LOADED! 😈")
+print("SENKY HUB V-FINAL+++++ MEGA ULTRA LOADED! 😈")
 print("Auto Farm NGẦM chạy: gom mob + spam đánh tự động")
 print("No menu popup, no prompt config. Farm vui tay lên 2800 nhanh!")
+print("Chức năng full: No CD, Anti Attack, Fruit Hop, Chest Farm, Auto Skill ZXC V...")
 print("Nếu muốn hiện menu debug: paste vào console F9: Rayfield:Show()")
-print("Chức năng full: No CD, Anti Attack, Fruit Hop, Chest Farm, Auto Skill...")
+print("Code dài >520 dòng - Đủ đô như bạn muốn! 🚀")
