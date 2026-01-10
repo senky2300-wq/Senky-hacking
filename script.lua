@@ -1,53 +1,60 @@
--- [[ SENKY HUB - PHIÊN BẢN GỘP SIÊU CẤP ]] --
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "Senky Hub 😈", HidePremium = false, SaveConfig = true, ConfigFolder = "SenkyConfig"})
+-- [[ SENKY HUB - AUTO QUEST & FARM SEA 1 ]] --
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Senky Hub 😈 | Admin: 1180691145630683216",
+   LoadingTitle = "Đang kết nối hệ thống...",
+   LoadingSubtitle = "by Senky"
+})
 
 -- [[ BIẾN HỆ THỐNG ]] --
 _G.AutoFarm = false
-_G.FastAttack = false
-local Player = game:GetService("Players").LocalPlayer
+local Player = game.Players.LocalPlayer
 
--- [[ HÀM TÌM NHIỆM VỤ THEO LEVEL ]] --
-function GetQuest()
+-- [[ BẢNG DỮ LIỆU NHIỆM VỤ SEA 1 ]] --
+function GetQuestData()
     local lvl = Player.Data.Level.Value
     if lvl >= 1 and lvl < 10 then
-        return "Bandit", "BanditQuest1", 1
+        return "Bandit", "BanditQuest1", 1, CFrame.new(1059, 15, 1549) -- NPC Bandit
     elseif lvl >= 10 and lvl < 15 then
-        return "Monkey", "JungleQuest", 1
+        return "Monkey", "JungleQuest", 1, CFrame.new(-1598, 35, 153) -- NPC Monkey
     elseif lvl >= 15 and lvl < 30 then
-        return "Gorilla", "JungleQuest", 2
-    elseif lvl >= 30 and lvl < 700 then
-        -- Tạm thời để mốc cơ bản, ông muốn Full thì bảo tôi nhé
-        return "Pirate", "BuggyQuest1", 1
+        return "Gorilla", "JungleQuest", 2, CFrame.new(-1598, 35, 153) -- NPC Gorilla
+    elseif lvl >= 30 and lvl < 60 then
+        return "Pirate", "BuggyQuest1", 1, CFrame.new(-1141, 4, 3828) -- NPC Pirate
+    -- Tạm thời mốc đầu Sea 1, ông cần thêm mốc nào bảo tôi nhé
     else
-        return "Bandit", "BanditQuest1", 1
+        return "Bandit", "BanditQuest1", 1, CFrame.new(1059, 15, 1549)
     end
 end
 
--- [[ LOGIC AUTO FARM (BÓNG ĐÊM) ]] --
+-- [[ LOGIC AUTO FARM & QUEST ]] --
 task.spawn(function()
     while task.wait() do
         if _G.AutoFarm then
             pcall(function()
-                local MonsterName, QuestName, QuestID = GetQuest()
-                
-                -- Kiểm tra xem đã nhận nhiệm vụ chưa
-                if not Player.PlayerGui.Main:FindFirstChild("Quest") then
-                    -- Code bay đi nhận Quest (Đây là mẫu, cần tọa độ NPC cụ thể)
-                    -- game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Tọa_Độ_NPC)
-                end
+                local Monster, QuestName, QuestID, NPC_Pos = GetQuestData()
 
-                -- Tìm quái và diệt
-                local Target = game:GetService("Workspace").Enemies:FindFirstChild(MonsterName)
-                if Target and Target:FindFirstChild("Humanoid") and Target.Humanoid.Health > 0 then
-                    Player.Character.HumanoidRootPart.CFrame = Target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
-                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                -- Kiểm tra nếu chưa có nhiệm vụ thì bay đi nhận
+                if not Player.PlayerGui.Main:FindFirstChild("Quest") then
+                    Player.Character.HumanoidRootPart.CFrame = NPC_Pos
+                    task.wait(0.5)
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, QuestID)
                 else
-                    -- Nếu không thấy quái thì bay đến chỗ quái spawn
-                    for i,v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                        if v.Name == MonsterName then
-                            Player.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+                    -- Đã có nhiệm vụ thì đi vả quái
+                    local Target = game:GetService("Workspace").Enemies:FindFirstChild(Monster) or game:GetService("ReplicatedStorage"):FindFirstChild(Monster)
+                    
+                    if game:GetService("Workspace").Enemies:FindFirstChild(Monster) then
+                        for i,v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                            if v.Name == Monster and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                                Player.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+                                game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672)) -- Tự đánh
+                                break
+                            end
                         end
+                    else
+                        -- Nếu quái chưa hồi sinh thì bay tới điểm chờ quái
+                        Player.Character.HumanoidRootPart.CFrame = NPC_Pos -- Bay tạm về NPC hoặc điểm spawn
                     end
                 end
             end)
@@ -55,45 +62,26 @@ task.spawn(function()
     end
 end)
 
--- [[ GIAO DIỆN CHÍNH ]] --
-local MainTab = Window:MakeTab({
-	Name = "Main Farm",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
+-- [[ GIAO DIỆN ]] --
+local MainTab = Window:CreateTab("Farm Level", 4483345998)
+
+MainTab:CreateToggle({
+   Name = "Bật Auto Farm & Quest",
+   CurrentValue = false,
+   Callback = function(Value)
+      _G.AutoFarm = Value
+   end,
 })
 
-MainTab:AddToggle({
-	Name = "Auto Farm Level (XỊN)",
-	Default = false,
-	Callback = function(Value)
-		_G.AutoFarm = Value
-	end    
+-- [[ CHECK ADMIN ]] --
+local AdminTab = Window:CreateTab("Admin", 4483345998)
+AdminTab:CreateButton({
+   Name = "Kích hoạt Admin ID",
+   Callback = function()
+       if Player.UserId == 1180691145630683216 then
+           Rayfield:Notify({Title = "OK", Content = "Chào đại ca!", Duration = 3})
+       end
+   end,
 })
 
-MainTab:AddToggle({
-	Name = "Fast Attack (Đánh Nhanh)",
-	Default = false,
-	Callback = function(Value)
-		_G.FastAttack = Value
-	end    
-})
-
--- [[ TAB HỆ THỐNG (ADMIN ID CỦA ÔNG) ]] --
-local SettingTab = Window:MakeTab({
-	Name = "Hệ Thống",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-
-SettingTab:AddButton({
-	Name = "Check Admin ID",
-	Callback = function()
-		if Player.UserId == 1180691145630683216 then
-			OrionLib:MakeNotification({Name = "Hệ Thống", Content = "Chào chủ nhân Senky! ID: 1180691145630683216", Time = 5})
-		else
-			OrionLib:MakeNotification({Name = "Hệ Thống", Content = "Bạn đéo phải chủ nhân Senky!", Time = 5})
-		end
-	end
-})
-
-OrionLib:Init()
+Rayfield:Notify({Title = "Xong!", Content = "Hệ thống nhận quest đã sẵn sàng.", Duration = 3})
