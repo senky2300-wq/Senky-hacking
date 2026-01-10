@@ -19,17 +19,76 @@ local char = Player.Character or Player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 
 _G = _G or {}
-_G.AutoFarm = true
+_G.AutoFarm = false
 _G.BringMob = true
 _G.FastAttack = true
 _G.AntiAttack = true
 _G.NoCooldown = true
 _G.FlyEnabled = false
 _G.Speed = 160
-_G.AutoChest = true
+_G.AutoChest = false
 _G.InfiniteJump = true
 _G.WalkOnWater = true
 _G.NoClip = true
+
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UIListLayout = Instance.new("UIListLayout")
+local Title = Instance.new("TextLabel")
+local BtnFarm = Instance.new("TextButton")
+local BtnFly = Instance.new("TextButton")
+local BtnChest = Instance.new("TextButton")
+local BtnFruit = Instance.new("TextButton")
+
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "SenkyMobile"
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 150, 0, 250)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+UIListLayout.Parent = MainFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
+
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "SENKY HUB 😈"
+Title.TextColor3 = Color3.fromRGB(255, 0, 0)
+Title.BackgroundTransparency = 1
+Title.TextSize = 18
+
+local function CreateBtn(btn, txt, callback)
+    btn.Parent = MainFrame
+    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.Text = txt
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+CreateBtn(BtnFarm, "Auto Farm: OFF", function()
+    _G.AutoFarm = not _G.AutoFarm
+    BtnFarm.Text = "Auto Farm: " .. (_G.AutoFarm and "ON" or "OFF")
+end)
+
+CreateBtn(BtnFly, "Fly: OFF", function()
+    _G.FlyEnabled = not _G.FlyEnabled
+    BtnFly.Text = "Fly: " .. (_G.FlyEnabled and "ON" or "OFF")
+end)
+
+CreateBtn(BtnChest, "Auto Chest: OFF", function()
+    _G.AutoChest = not _G.AutoChest
+    BtnChest.Text = "Auto Chest: " .. (_G.AutoChest and "ON" or "OFF")
+end)
+
+CreateBtn(BtnFruit, "Săn Trái & Hop", function()
+    FruitServerHop()
+end)
 
 Player.CharacterAdded:Connect(function(n)
     char = n
@@ -46,11 +105,9 @@ local function TP(pos)
     end)
 end
 
-local function FruitServerHop()
-    local fruitFound = false
+function FruitServerHop()
     for _, v in pairs(Workspace:GetChildren()) do
         if v:IsA("Tool") and (v.Name:find("Fruit") or v:FindFirstChild("Handle")) then
-            fruitFound = true
             hrp.CFrame = v.Handle.CFrame
             task.wait(1)
             ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", v.Name, v)
@@ -155,6 +212,7 @@ local QuestList = {
     {min = 1100, quest = "IceQuest1", id = 1, mob = "Arctic Warrior", pos = Vector3.new(-6060.1, 15.2, -5000.3)},
     {min = 1250, quest = "ForgottenQuest", id = 1, mob = "Forgotten Pirate", pos = Vector3.new(-3000.5, 15.3, -3000.4)},
     {min = 1350, quest = "SnowMountainQuest", id = 1, mob = "Winter Warrior", pos = Vector3.new(1150.1, 120.2, -5200.3)},
+    {min = 1425, quest = "SnowMountainQuest", id = 2, mob = "Glacial Warrior", pos = Vector3.new(1150.1, 120.2, -5200.3)},
     {min = 1500, quest = "PiratePortTownQuest", id = 1, mob = "Pirate Millionaire", pos = Vector3.new(-290.1, 43.5, 5577.6)},
     {min = 1600, quest = "PiratePortTownQuest", id = 2, mob = "Pistol Billionaire", pos = Vector3.new(-290.1, 43.5, 5577.6)},
     {min = 1700, quest = "HydraQuest1", id = 1, mob = "Dragon Crew Warrior", pos = Vector3.new(5700.5, 15.4, -100.2)},
@@ -165,8 +223,9 @@ local QuestList = {
     {min = 2200, quest = "CakeQuest", id = 1, mob = "Cake Guard", pos = Vector3.new(-1150.3, 70.4, -2500.5)},
     {min = 2300, quest = "CakeQuest", id = 2, mob = "Baking Staff", pos = Vector3.new(-1150.3, 70.4, -2500.5)},
     {min = 2400, quest = "ChocolateQuest1", id = 1, mob = "Cocoa Warrior", pos = Vector3.new(200.1, 50.2, 400.3)},
-    {min = 2475, quest = "ChocolateQuest1", id = 2, mob = "Cacao Warrior", pos = Vector3.new(200.1, 50.2, 400.3)},
-    {min = 2500, quest = "CandyQuest1", id = 1, mob = "Candy Pirate", pos = Vector3.new(800.2, 50.3, 1200.4)}
+    {min = 2500, quest = "CandyQuest1", id = 1, mob = "Candy Pirate", pos = Vector3.new(800.2, 50.3, 1200.4)},
+    {min = 2600, quest = "TikiQuest1", id = 1, mob = "Sunken Pirate", pos = Vector3.new(-15000, 50, -15000)},
+    {min = 2700, quest = "FinalQuest1", id = 1, mob = "Senky Guard", pos = Vector3.new(-16000, 100, -16000)}
 }
 
 local function GetQuest()
@@ -186,10 +245,8 @@ task.spawn(function()
                     TP(q.pos)
                     ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", q.quest, q.id)
                 else
-                    local f = false
                     for _, m in pairs(Workspace.Enemies:GetChildren()) do
                         if m.Name == q.mob and m:FindFirstChild("Humanoid") and m.Humanoid.Health > 0 then
-                            f = true
                             hrp.CFrame = m.HumanoidRootPart.CFrame * CFrame.new(0, 11, 0)
                         end
                     end
@@ -211,53 +268,9 @@ task.spawn(function()
     end
 end)
 
-UserInputService.InputBegan:Connect(function(i, g)
-    if g then return end
-    if i.KeyCode == Enum.KeyCode.F1 then
-        _G.AutoFarm = not _G.AutoFarm
-    elseif i.KeyCode == Enum.KeyCode.F2 then
-        _G.FlyEnabled = not _G.FlyEnabled
-    elseif i.KeyCode == Enum.KeyCode.F3 then
-        _G.AutoChest = not _G.AutoChest
-    elseif i.KeyCode == Enum.KeyCode.F4 then
-        FruitServerHop()
-    end
-end)
-
 UserInputService.JumpRequest:Connect(function()
     if _G.InfiniteJump and char:FindFirstChildOfClass("Humanoid") then
         char:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
-local keys = {W=false, S=false, A=false, D=false, Space=false, LeftShift=false}
-UserInputService.InputBegan:Connect(function(i)
-    local k = i.KeyCode.Name
-    if keys[k] ~= nil then keys[k] = true end
-end)
-UserInputService.InputEnded:Connect(function(i)
-    local k = i.KeyCode.Name
-    if keys[k] ~= nil then keys[k] = false end
-end)
-
-task.spawn(function()
-    while task.wait() do
-        if _G.FlyEnabled and hrp then
-            pcall(function()
-                local cam = Workspace.CurrentCamera.CFrame
-                local dir = Vector3.new(0,0,0)
-                if keys.W then dir = dir + cam.LookVector end
-                if keys.S then dir = dir - cam.LookVector end
-                if keys.A then dir = dir - cam.RightVector end
-                if keys.D then dir = dir + cam.RightVector end
-                if keys.Space then dir = dir + Vector3.new(0,1,0) end
-                if keys.LeftShift then dir = dir - Vector3.new(0,1,0) end
-                if dir.Magnitude > 0 then
-                    hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + cam.LookVector) * CFrame.new(dir.Unit * (_G.Speed / 12))
-                end
-                hrp.Velocity = Vector3.new(0, 0.1, 0)
-            end)
-        end
     end
 end)
 
