@@ -1,98 +1,120 @@
 --[[
-    SENKY HUB V17 - THE ULTIMATE GOD
-    - Tầng 1: Supreme Kill Aura (Quét sát thương tầm rộng, 0 Delay)
-    - Tầng 2: Auto Quest Remote (Nhận nhiệm vụ từ xa ngay lập tức)
-    - Tầng 3: Banana Cycle (Nuôi spawn, giữ luồng EXP liên tục)
+    SENKY HUB V24 - ETERNAL FLOW (BẢN FULL TREO MÁY)
+    - Kiến trúc: Combat State Retention & Spawn Cycling
+    - Tính năng: Mob Bring (Gom quái), Kill Aura (0ms), Auto Quest, Auto Code
+    - Mục tiêu: Treo 24/7 không lỗi, Max Mastery
 ]]
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Senky Hub V24 💀", HidePremium = false, SaveConfig = true, ConfigFolder = "SenkyConfig"})
 
 local LP = game:GetService("Players").LocalPlayer
 local RS = game:GetService("ReplicatedStorage")
 
 _G.Settings = {
-    AutoFarm = true,
+    AutoFarm = false,
+    Weapon = "Melee", -- Ưu tiên cày Mastery như ảnh
     Distance = 22,
-    Weapon = "Melee",
-    AuraRange = 50, -- Tầm đánh của Kill Aura
-    AttackRate = 0.01 -- Tốc độ gửi packet (siêu nhanh)
+    BringMob = true,
+    FastAttack = true
 }
 
--- ═══ 1. LÕI KILL AURA (FAST ATTACK FRAMEWORK) ═══
-local CombatFramework = require(RS:WaitForChild("CombatFramework"))
-local CombatFrameworkR
-for _, v in pairs(getupvalues(CombatFramework)) do
-    if typeof(v) == "table" and v.activeController then
-        CombatFrameworkR = v break
+-- ═══ 1. AUTO REDEEM CODE X2 EXP (DÙNG CHO ACC MỚI/LV 42) ═══
+task.spawn(function()
+    local codes = {"TRIPLEABUSE", "Sub2CaptainMaui", "KITT_RESET", "CHANDLER", "JCWK", "Sub2Fer999"}
+    for _, c in pairs(codes) do
+        RS.Remotes.RedeemCode:DotServer(c)
+        task.wait(0.5)
     end
-end
+end)
 
-local function KillAura(target)
-    local AC = CombatFrameworkR.activeController
-    if AC and AC.equipped then
-        -- Gửi tín hiệu đánh liên tục (Kill Aura)
-        AC.attackInterval = 0
-        AC:attack()
-        RS.Remotes.Validator:FireServer(0) -- Heartbeat Combat-Lock
+-- ═══ 2. TỐI ƯU HÓA HỆ THỐNG (CHỐNG LAG KHI TREO LÂU) ═══
+task.spawn(function()
+    settings().Rendering.QualityLevel = 1
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("BasePart") or v:IsA("MeshPart") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        end
     end
-end
+end)
 
--- ═══ 2. TỰ ĐỘNG NHẬN QUEST TỪ XA (REMOTE INVOKE) ═══
-local function AutoQuest()
+-- ═══ 3. HÀM QUẢN LÝ NHIỆM VỤ & QUÁI (THEO LEVEL 42) ═══
+function GetFarmData()
     local lv = LP.Data.Level.Value
-    local qName, qNum, mName, qPos, mPos
-    
-    -- Level 42 nhận Brute (Map Đảo Buggy)
     if lv >= 30 and lv < 60 then
-        qName, qNum, mName = "BuggyQuest1", 1, "Brute"
-        qPos = CFrame.new(-1141, 5, 3831)
-        mPos = CFrame.new(-1103, 14, 3840)
+        -- Đảo Buggy - Mob Brute
+        return "BuggyQuest1", 1, "Brute", CFrame.new(-1103, 14, 3840)
     end
-    
-    local questGui = LP.PlayerGui.Main.Quest
-    if not questGui.Visible then
-        -- Nhận quest từ xa bằng Remote (Không cần bay về NPC)
-        RS.Remotes.CommF_:InvokeServer("StartQuest", qName, qNum)
-    end
-    return mName, mPos
+    return "BanditQuest1", 1, "Bandit", CFrame.new(1059, 17, 1547)
 end
 
--- ═══ 3. VÒNG LẶP HÀNH QUYẾT (THE GOD FLOW) ═══
+-- ═══ 4. LÕI FARM - KILL AURA & MOB BRING ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.AutoFarm then
             pcall(function()
-                local mName, mPos = AutoQuest()
-                local enemies = workspace.Enemies:GetChildren()
+                local qName, qNum, mName, mPos = GetFarmData()
                 
-                -- Đếm quái để giữ Spawn-Lock (Banana Logic)
-                local aliveMobs = {}
-                for _, v in pairs(enemies) do
+                -- Auto Quest (Remote Invoke)
+                if not LP.PlayerGui.Main.Quest.Visible then
+                    RS.Remotes.CommF_:InvokeServer("StartQuest", qName, qNum)
+                end
+
+                local hasMob = false
+                for _, v in pairs(workspace.Enemies:GetChildren()) do
                     if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                        table.insert(aliveMobs, v)
+                        hasMob = true
+                        -- GOM QUÁI (MOB BRING)
+                        if _G.Settings.BringMob then
+                            v.HumanoidRootPart.CanCollide = false
+                            v.HumanoidRootPart.CFrame = mPos
+                        end
+
+                        -- KILL AURA & STAY STATE
+                        repeat
+                            task.wait()
+                            LP.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.Distance, 0)
+                            
+                            -- Trang bị vũ khí cày Mastery
+                            local tool = LP.Backpack:FindFirstChild(_G.Settings.Weapon) or LP.Character:FindFirstChild(_G.Settings.Weapon)
+                            if tool then LP.Character.Humanoid:EquipTool(tool) end
+                            
+                            -- Gửi tín hiệu gây dame (Kill Aura)
+                            RS.Remotes.Validator:FireServer(0)
+                            if _G.Settings.FastAttack then
+                                -- Kích hoạt Attack qua Tool
+                                if tool then tool:Activate() end
+                            end
+                        until not _G.Settings.AutoFarm or v.Humanoid.Health <= 0
                     end
                 end
 
-                -- Nếu bãi có quái (Giữ lại 1 con để nuôi spawn nếu cần)
-                if #aliveMobs > 1 then
-                    local target = aliveMobs[1]
-                    
-                    repeat
-                        task.wait(_G.Settings.AttackRate)
-                        -- Bay lơ lửng mượt mà trên đầu quái
-                        LP.Character.HumanoidRootPart.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.Distance, 0)
-                        
-                        -- Tự cầm vũ khí cày Mastery
-                        local tool = LP.Backpack:FindFirstChild(_G.Settings.Weapon) or LP.Character:FindFirstChild(_G.Settings.Weapon)
-                        if tool then LP.Character.Humanoid:EquipTool(tool) end
-                        
-                        -- Kích hoạt Kill Aura
-                        KillAura(target)
-                    until not _G.Settings.AutoFarm or target.Humanoid.Health <= 0
-                else
-                    -- Đứng chờ tại điểm Spawn chuẩn để quái vừa ra là dính đòn ngay
+                -- Nếu sạch bãi (Chờ Spawn), đứng tại điểm Camp để giữ Zone Active
+                if not hasMob then
                     LP.Character.HumanoidRootPart.CFrame = mPos * CFrame.new(0, _G.Settings.Distance, 0)
-                    RS.Remotes.Validator:FireServer(0) -- Giữ Combat-Lock
                 end
             end)
         end
     end
 end)
+
+-- ═══ 5. GIAO DIỆN ĐIỀU KHIỂN ═══
+local Tab = Window:MakeTab({Name = "Farm & Mastery", Icon = "rbxassetid://4483345998"})
+
+Tab:AddToggle({
+	Name = "Bật Auto Farm (Banana Style)",
+	Default = false,
+	Callback = function(v) _G.Settings.AutoFarm = v end
+})
+
+Tab:AddDropdown({
+	Name = "Vũ khí (Cày Mastery)",
+	Default = "Melee",
+	Options = {"Melee", "Sword", "Fruit"},
+	Callback = function(v) _G.Settings.Weapon = v end
+})
+
+Tab:AddParagraph("Lưu ý treo máy","Bản V24 đã fix lag và auto nhận code x2. Mày cứ bật lên và để đó, nó sẽ tự gom quái về một cục và vả sạch.")
+
+OrionLib:Init()
