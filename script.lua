@@ -1,8 +1,8 @@
 --[[
-    SENKY HUB V26 - SUPREME KILL AURA
-    - Cơ chế: Fast Attack Hook (Dame đa mục tiêu)
-    - Cơ chế: Mob Bring (Kéo quái về tâm Aura)
-    - Tự động: Nhận Quest & Treo máy ổn định
+    SENKY HUB V27 - LEVEL ADAPTIVE
+    - Tự động nhận diện Level 104 để nhận Quest chuẩn
+    - Kill Aura: Sát thương đa mục tiêu không cần vung tay
+    - Mob Bring: Gom toàn bộ quái vào tâm sát thương
 ]]
 
 local LP = game:GetService("Players").LocalPlayer
@@ -10,59 +10,61 @@ local RS = game:GetService("ReplicatedStorage")
 
 _G.Settings = {
     AutoFarm = true,
-    Distance = 25,
-    Weapon = "Melee", -- Đang ở Level 42 cày Melee là chuẩn
-    AuraRange = 60
+    Distance = 20,
+    Weapon = "Melee", -- Mastery 56
+    AuraRange = 50
 }
 
--- ═══ 1. LÕI KILL AURA (FAST ATTACK) ═══
--- Gửi tín hiệu gây sát thương trực tiếp lên server không qua animation
-local function ActivateKillAura()
+-- ═══ 1. LÕI KILL AURA THỰC THỤ (SERVER-SIDE TICK) ═══
+local function KillAuraEngine(target)
     local tool = LP.Backpack:FindFirstChild(_G.Settings.Weapon) or LP.Character:FindFirstChild(_G.Settings.Weapon)
     if tool then
         LP.Character.Humanoid:EquipTool(tool)
-        -- Gửi Validator để đăng ký combat state
-        RS.Remotes.Validator:FireServer(0)
-        -- Remote gây dame thực tế (Tùy thuộc vào CombatFramework của game)
-        RS.Remotes.CommF_:InvokeServer("Attack", { [1] = "Melee" }) 
+        -- Đánh lừa server bằng cách gửi liên tiếp các Packet sát thương
+        RS.Remotes.Validator:FireServer(math.floor(tick() * 1000))
+        RS.Remotes.CommF_:InvokeServer("Attack", {[1] = target})
     end
 end
 
--- ═══ 2. TỰ ĐỘNG GOM QUÁI & DIỆT (GOD FLOW) ═══
+-- ═══ 2. AUTO QUEST & FARM CHO LEVEL 104 ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.AutoFarm then
             pcall(function()
-                -- 1. Nhận Quest Brute (Map Lv 42)
-                if not LP.PlayerGui.Main.Quest.Visible then
-                    RS.Remotes.CommF_:InvokeServer("StartQuest", "BuggyQuest1", 1)
+                local lv = LP.Data.Level.Value -- Bây giờ là 104
+                local qName, qNum, mName, mPos
+                
+                -- Cấu hình cho Level 104 (Đảo Tuyết/Nhà Tù)
+                if lv >= 90 and lv < 120 then
+                    qName, qNum, mName = "SnowQuest", 2, "Snowman"
+                    mPos = CFrame.new(1389, 150, -1325) -- Ví dụ tọa độ Snowman
                 end
 
-                local mName = "Brute"
-                local mPos = CFrame.new(-1103, 14, 3840) -- Tâm bãi Brute
+                -- Nhận nhiệm vụ từ xa
+                if not LP.PlayerGui.Main.Quest.Visible then
+                    RS.Remotes.CommF_:InvokeServer("StartQuest", qName, qNum)
+                end
 
-                -- 2. Gom quái & Kill Aura
                 local enemies = workspace.Enemies:GetChildren()
+                local hasTarget = false
+                
                 for _, v in pairs(enemies) do
                     if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                        -- Gom quái về một điểm (Gần vị trí player)
+                        hasTarget = true
+                        -- MOB BRING: Gom quái về dưới chân
                         v.HumanoidRootPart.CanCollide = false
                         v.HumanoidRootPart.CFrame = LP.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
                         
-                        -- Kích hoạt Kill Aura lên quái
-                        ActivateKillAura()
+                        -- KÍCH HOẠT KILL AURA
+                        KillAuraEngine(v)
                     end
                 end
 
-                -- 3. Di chuyển thông minh (Stay State)
-                -- Luôn giữ player lơ lửng trên bãi quái để Aura hoạt động
-                LP.Character.HumanoidRootPart.CFrame = mPos * CFrame.new(0, _G.Settings.Distance, 0)
-                
-                -- Heartbeat Combat-Lock (Bí mật của Banana)
-                RS.Remotes.Validator:FireServer(0)
+                -- Di chuyển tới bãi farm
+                if not hasTarget then
+                    LP.Character.HumanoidRootPart.CFrame = mPos * CFrame.new(0, _G.Settings.Distance, 0)
+                end
             end)
         end
     end
 end)
-
-print("Senky Hub V26: Supreme Kill Aura Loaded!")
