@@ -8,7 +8,7 @@
     ║  ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚══════╝  ║
     ║                                                                                        ║
     ║              🍌 BANANA HUB - PREMIUM EDITION 🍌                                       ║
-    ║              Made by: SENKY CODER | Version: 2.0 (Fixed GUI 2026)                    ║
+    ║              Made by: SENKY CODER | Version: 2.0 (Full Fix 2026)                     ║
     ╚══════════════════════════════════════════════════════════════╝
 ]]
 
@@ -17,12 +17,13 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
 -- ════════════════════════════════════════════════════════
 --  🎬 INTRO ANIMATION - FIX KO HIỆN
 -- ════════════════════════════════════════════════════════
-wait(3) -- Chờ game + PlayerGui load xong để tránh GUI ẩn
+wait(3) -- Chờ load
 
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
@@ -175,7 +176,7 @@ Player.Idled:Connect(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  ⚡ ULTRA FAST ATTACK (fix lag + an toàn)
+--  ⚡ ULTRA FAST ATTACK
 -- ════════════════════════════════════════════════════════
 spawn(function()
     while true do
@@ -192,7 +193,7 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  🌀 BRING MOB (fix leak memory)
+--  🌀 BRING MOB
 -- ════════════════════════════════════════════════════════
 local BringConnection
 
@@ -327,7 +328,7 @@ end
 -- ════════════════════════════════════════════════════════
 spawn(function()
     while true do
-        task.wait(0.5 + math.random(0.1, 0.3)) -- Random delay anti detect
+        task.wait(0.5 + math.random(0.1, 0.3))
         if not _G.Settings.AutoFarm or not Character or Humanoid.Health <= 0 then continue end
         
         pcall(function()
@@ -369,9 +370,9 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  🎨 BANANA HUB GUI - FULL (fix menu hiện)
+--  🎨 BANANA HUB GUI - FULL FIX MENU + THU NHỎ + ẨN
 -- ════════════════════════════════════════════════════════
-wait(3.5) -- Delay thêm để đảm bảo load xong
+wait(3.5)
 
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "BananaHubGUI"
@@ -389,7 +390,7 @@ Main.Position = UDim2.new(0.5, -300, 0.5, -250)
 Main.Size = UDim2.new(0, 600, 0, 500)
 Main.Active = true
 Main.Draggable = true
-Main.Visible = true -- Force visible
+Main.Visible = true
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 12)
@@ -416,38 +417,40 @@ Title.TextColor3 = Color3.fromRGB(20, 20, 25)
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
+-- Nút Close
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = TopBar
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
 CloseBtn.BorderSizePixel = 0
 CloseBtn.Position = UDim2.new(1, -40, 0.5, -15)
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Size = UDim2.new(0, 35, 0, 35)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
-CloseBtn.TextSize = 16
+CloseBtn.TextSize = 20
 
 local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.CornerRadius = UDim.new(0, 8)
 CloseCorner.Parent = CloseBtn
 
 CloseBtn.MouseButton1Click:Connect(function()
     Gui:Destroy()
 end)
 
+-- Nút Minimize (to hơn, dễ click)
 local MinBtn = Instance.new("TextButton")
 MinBtn.Parent = TopBar
-MinBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+MinBtn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
 MinBtn.BorderSizePixel = 0
-MinBtn.Position = UDim2.new(1, -75, 0.5, -15)
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -85, 0.5, -15)
+MinBtn.Size = UDim2.new(0, 35, 0, 35)
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.Text = "-"
 MinBtn.TextColor3 = Color3.fromRGB(20, 20, 25)
-MinBtn.TextSize = 20
+MinBtn.TextSize = 22
 
 local MinCorner = Instance.new("UICorner")
-MinCorner.CornerRadius = UDim.new(0, 6)
+MinCorner.CornerRadius = UDim.new(0, 8)
 MinCorner.Parent = MinBtn
 
 local isMinimized = false
@@ -459,6 +462,46 @@ MinBtn.MouseButton1Click:Connect(function()
     else
         TweenService:Create(Main, TweenInfo.new(0.3), {Size = UDim2.new(0, 600, 0, 500)}):Play()
         MinBtn.Text = "-"
+    end
+end)
+
+-- Nút Hide (ẩn hẳn menu)
+local HideBtn = Instance.new("TextButton")
+HideBtn.Parent = TopBar
+HideBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+HideBtn.BorderSizePixel = 0
+HideBtn.Position = UDim2.new(1, -130, 0.5, -15)
+HideBtn.Size = UDim2.new(0, 35, 0, 35)
+HideBtn.Font = Enum.Font.GothamBold
+HideBtn.Text = "H"
+HideBtn.TextColor3 = Color3.fromRGB(255,255,255)
+HideBtn.TextSize = 20
+
+local HideCorner = Instance.new("UICorner")
+HideCorner.CornerRadius = UDim.new(0, 8)
+HideCorner.Parent = HideBtn
+
+HideBtn.MouseButton1Click:Connect(function()
+    Main.Visible = not Main.Visible
+    if not Main.Visible then
+        HideBtn.Text = "S"
+    else
+        HideBtn.Text = "H"
+    end
+end)
+
+-- Hotkey M toggle minimize
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.M then
+        isMinimized = not isMinimized
+        if isMinimized then
+            TweenService:Create(Main, TweenInfo.new(0.3), {Size = UDim2.new(0, 600, 0, 50)}):Play()
+            MinBtn.Text = "+"
+        else
+            TweenService:Create(Main, TweenInfo.new(0.3), {Size = UDim2.new(0, 600, 0, 500)}):Play()
+            MinBtn.Text = "-"
+        end
     end
 end)
 
@@ -543,9 +586,6 @@ for _, v in pairs(TabContainer:GetChildren()) do
     end
 end
 
--- ════════════════════════════════════════════════════════
---  🎛️ CREATE TOGGLE FUNCTION
--- ════════════════════════════════════════════════════════
 function CreateToggle(parent, name, setting, callback)
     local Container = Instance.new("Frame")
     Container.Parent = parent
@@ -646,7 +686,6 @@ function CreateToggle(parent, name, setting, callback)
         
         if callback then callback(enabled) end
         
-        -- Fix BringMob khi toggle
         if setting == "BringMob" then
             BringMobs(GetQuest().Mob)
         end
@@ -655,9 +694,6 @@ function CreateToggle(parent, name, setting, callback)
     parent.CanvasSize = UDim2.new(0, 0, 0, parent.UIListLayout.AbsoluteContentSize.Y + 20)
 end
 
--- ════════════════════════════════════════════════════════
---  📊 CREATE SLIDER FUNCTION
--- ════════════════════════════════════════════════════════
 function CreateSlider(parent, name, setting, min, max, default)
     local Container = Instance.new("Frame")
     Container.Parent = parent
@@ -752,25 +788,13 @@ function CreateSlider(parent, name, setting, min, max, default)
     parent.CanvasSize = UDim2.new(0, 0, 0, parent.UIListLayout.AbsoluteContentSize.Y + 20)
 end
 
--- ════════════════════════════════════════════════════════
---  ✨ ADD TOGGLES & SLIDERS
--- ════════════════════════════════════════════════════════
-
 -- FARM TAB
 CreateToggle(FarmTab, "🚀 Auto Farm Level", "AutoFarm", function(v)
-    if v then
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "🍌 BANANA HUB",
-            Text = "Auto Farm đã được BẬT!",
-            Duration = 3
-        })
-    else
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "🍌 BANANA HUB",
-            Text = "Auto Farm đã được TẮT!",
-            Duration = 3
-        })
-    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "🍌 BANANA HUB",
+        Text = v and "Auto Farm BẬT!" or "Auto Farm TẮT!",
+        Duration = 3
+    })
 end)
 
 CreateSlider(FarmTab, "📏 Farm Distance", "FarmDistance", 10, 50, 15)
@@ -778,13 +802,11 @@ CreateSlider(FarmTab, "🌀 Bring Distance", "BringDistance", 200, 500, 350)
 
 -- COMBAT TAB
 CreateToggle(CombatTab, "⚡ Ultra Fast Attack", "FastAttack", function(v)
-    if v then
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "🍌 BANANA HUB",
-            Text = "Fast Attack đã BẬT (Siêu Nhanh)!",
-            Duration = 3
-        })
-    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "🍌 BANANA HUB",
+        Text = v and "Fast Attack BẬT (Siêu Nhanh)!" or "Fast Attack TẮT!",
+        Duration = 3
+    })
 end)
 
 CreateToggle(CombatTab, "🌀 Bring Mob", "BringMob")
@@ -833,36 +855,19 @@ spawn(function()
     end
 end)
 
--- ════════════════════════════════════════════════════════
---  🎉 FINAL NOTIFICATION
--- ════════════════════════════════════════════════════════
+-- FINAL NOTIFICATION + FORCE SHOW
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "🍌 BANANA HUB PREMIUM",
-    Text = "Script loaded successfully!\n🔥 Menu should appear now - Made by SENKY CODER",
+    Text = "Loaded! Menu hiện - Nhấn '-' hoặc 'M' thu nhỏ, 'H' ẩn hẳn\n🔥 SENKY CODER",
     Duration = 5
 })
 
-print([[
-╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
-║       🍌 BANANA HUB - PREMIUM EDITION (GUI FIXED) 🍌      ║
-║                                                           ║
-║       ✅ Script loaded successfully!                     ║
-║       🔥 Menu should be visible now                      ║
-║       🌀 Bring Mob & Fast Attack: OPTIMIZED              ║
-║       📌 Version: 2.0 Fixed 2026                         ║
-║       👤 Made by: SENKY CODER                            ║
-║       🌟 Sea: ]] .. CurrentSea .. [[                                              ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
-]])
+print("[DEBUG] Banana Hub Loaded - Menu visible! Nhấn M để thu nhỏ.")
 
--- Force show menu sau 5s nếu vẫn ko thấy
+-- Force show + center
 task.spawn(function()
     wait(5)
-    if Main.Visible == false then
-        Main.Visible = true
-        Main.Position = UDim2.new(0.5, -300, 0.5, -250)
-        print("[FORCE SHOW] Menu forced visible!")
-    end
+    Main.Visible = true
+    Main.Position = UDim2.new(0.5, -300, 0.5, -250)
+    print("[FORCE] Menu forced visible & centered!")
 end)
