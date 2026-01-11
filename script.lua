@@ -1,8 +1,8 @@
 --[[
-    SENKY HUB V15 - THE GOD ARCHITECT
-    - Kiến trúc: Combat-Lock Exploit (Desync Logic)
-    - Cơ chế: Virtual Kill Aura (No Animation, High DPS)
-    - Cơ chế: Packet Stability (Chống kick khi spam Validator)
+    SENKY HUB V17 - THE ULTIMATE GOD
+    - Tầng 1: Supreme Kill Aura (Quét sát thương tầm rộng, 0 Delay)
+    - Tầng 2: Auto Quest Remote (Nhận nhiệm vụ từ xa ngay lập tức)
+    - Tầng 3: Banana Cycle (Nuôi spawn, giữ luồng EXP liên tục)
 ]]
 
 local LP = game:GetService("Players").LocalPlayer
@@ -12,11 +12,11 @@ _G.Settings = {
     AutoFarm = true,
     Distance = 22,
     Weapon = "Melee",
-    AuraRange = 50, -- Tầm quét của Kill Aura
-    AttackSpeed = 0.02 -- Tốc độ gửi packet gây dame
+    AuraRange = 50, -- Tầm đánh của Kill Aura
+    AttackRate = 0.01 -- Tốc độ gửi packet (siêu nhanh)
 }
 
--- ═══ 1. LÕI KILL AURA MƯỢT (VIRTUAL ATTACK) ═══
+-- ═══ 1. LÕI KILL AURA (FAST ATTACK FRAMEWORK) ═══
 local CombatFramework = require(RS:WaitForChild("CombatFramework"))
 local CombatFrameworkR
 for _, v in pairs(getupvalues(CombatFramework)) do
@@ -25,56 +25,72 @@ for _, v in pairs(getupvalues(CombatFramework)) do
     end
 end
 
-local function VirtualAttack()
+local function KillAura(target)
     local AC = CombatFrameworkR.activeController
     if AC and AC.equipped then
-        -- Combat-Lock: Gửi tín hiệu tấn công liên tục nhưng không Reset Animation
+        -- Gửi tín hiệu đánh liên tục (Kill Aura)
         AC.attackInterval = 0
-        AC:attack() -- Kích hoạt trạng thái Combat trên Server
-        RS.Remotes.Validator:FireServer(0) -- Heartbeat giữ kết nối
+        AC:attack()
+        RS.Remotes.Validator:FireServer(0) -- Heartbeat Combat-Lock
     end
 end
 
--- ═══ 2. COMBAT-LOCK & SPAWN MANAGEMENT ═══
+-- ═══ 2. TỰ ĐỘNG NHẬN QUEST TỪ XA (REMOTE INVOKE) ═══
+local function AutoQuest()
+    local lv = LP.Data.Level.Value
+    local qName, qNum, mName, qPos, mPos
+    
+    -- Level 42 nhận Brute (Map Đảo Buggy)
+    if lv >= 30 and lv < 60 then
+        qName, qNum, mName = "BuggyQuest1", 1, "Brute"
+        qPos = CFrame.new(-1141, 5, 3831)
+        mPos = CFrame.new(-1103, 14, 3840)
+    end
+    
+    local questGui = LP.PlayerGui.Main.Quest
+    if not questGui.Visible then
+        -- Nhận quest từ xa bằng Remote (Không cần bay về NPC)
+        RS.Remotes.CommF_:InvokeServer("StartQuest", qName, qNum)
+    end
+    return mName, mPos
+end
+
+-- ═══ 3. VÒNG LẶP HÀNH QUYẾT (THE GOD FLOW) ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.AutoFarm then
             pcall(function()
-                local mName = "Brute" -- Target Level 42
+                local mName, mPos = AutoQuest()
                 local enemies = workspace.Enemies:GetChildren()
                 
-                -- Tìm và khóa mục tiêu chính
-                local target = nil
+                -- Đếm quái để giữ Spawn-Lock (Banana Logic)
+                local aliveMobs = {}
                 for _, v in pairs(enemies) do
                     if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                        target = v
-                        break
+                        table.insert(aliveMobs, v)
                     end
                 end
 
-                if target then
-                    -- KILL AURA MODE: Di chuyển mượt và gây dame ảo
+                -- Nếu bãi có quái (Giữ lại 1 con để nuôi spawn nếu cần)
+                if #aliveMobs > 1 then
+                    local target = aliveMobs[1]
+                    
                     repeat
-                        task.wait(_G.Settings.AttackSpeed)
-                        
-                        -- Di chuyển mượt bằng CFrame (Stealth Positioning)
+                        task.wait(_G.Settings.AttackRate)
+                        -- Bay lơ lửng mượt mà trên đầu quái
                         LP.Character.HumanoidRootPart.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.Distance, 0)
                         
-                        -- Tự cầm vũ khí nhưng không làm vướng màn hình
+                        -- Tự cầm vũ khí cày Mastery
                         local tool = LP.Backpack:FindFirstChild(_G.Settings.Weapon) or LP.Character:FindFirstChild(_G.Settings.Weapon)
                         if tool then LP.Character.Humanoid:EquipTool(tool) end
                         
-                        -- Kích hoạt Kill Aura qua Virtual Attack
-                        VirtualAttack()
-                        
-                        -- Đưa Server vào trạng thái Combat-Lock
-                        -- Bằng cách gửi liên tiếp các Remote mà không cần chờ Animation kết thúc
+                        -- Kích hoạt Kill Aura
+                        KillAura(target)
                     until not _G.Settings.AutoFarm or target.Humanoid.Health <= 0
                 else
-                    -- TRẠNG THÁI CHỜ (RETAIN COMBAT STATE)
-                    -- Đứng tại điểm spawn và vẫn gửi Validator để server không thoát Combat Mode
-                    LP.Character.HumanoidRootPart.CFrame = CFrame.new(-1103, 14, 3840) * CFrame.new(0, 40, 0)
-                    RS.Remotes.Validator:FireServer(0)
+                    -- Đứng chờ tại điểm Spawn chuẩn để quái vừa ra là dính đòn ngay
+                    LP.Character.HumanoidRootPart.CFrame = mPos * CFrame.new(0, _G.Settings.Distance, 0)
+                    RS.Remotes.Validator:FireServer(0) -- Giữ Combat-Lock
                 end
             end)
         end
