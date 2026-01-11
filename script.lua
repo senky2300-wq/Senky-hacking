@@ -8,7 +8,7 @@
     ║  ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚══════╝  ║
     ║                                                                                        ║
     ║              🍌 BANANA HUB - PREMIUM EDITION 🍌                                       ║
-    ║              Made by: SENKY CODER | Version: 2.0 (Fixed 2026)                        ║
+    ║              Made by: SENKY CODER | Version: 2.0 (Fixed GUI 2026)                    ║
     ╚══════════════════════════════════════════════════════════════╝
 ]]
 
@@ -20,12 +20,17 @@ local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 
 -- ════════════════════════════════════════════════════════
---  🎬 INTRO ANIMATION (giữ nguyên, fix parent PlayerGui an toàn hơn)
+--  🎬 INTRO ANIMATION - FIX KO HIỆN
 -- ════════════════════════════════════════════════════════
+wait(3) -- Chờ game + PlayerGui load xong để tránh GUI ẩn
+
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
 local IntroGui = Instance.new("ScreenGui")
 IntroGui.Name = "IntroAnimation"
-IntroGui.Parent = Player.PlayerGui  -- Fix: Dùng PlayerGui thay CoreGui để tránh block
+IntroGui.Parent = PlayerGui
 IntroGui.ResetOnSpawn = false
+IntroGui.IgnoreGuiInset = true
 
 local IntroFrame = Instance.new("Frame")
 IntroFrame.Parent = IntroGui
@@ -119,7 +124,7 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  🛡️ ANTI KICK (giữ nguyên, thêm pcall)
+--  🛡️ ANTI KICK
 -- ════════════════════════════════════════════════════════
 local OldNamecall
 OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
@@ -129,7 +134,7 @@ OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
 end)
 
 -- ════════════════════════════════════════════════════════
---  🌊 SEA DETECTION (giữ nguyên)
+--  🌊 SEA DETECTION
 -- ════════════════════════════════════════════════════════
 local CurrentSea = 1
 if game.PlaceId == 4442272183 then 
@@ -139,7 +144,7 @@ elseif game.PlaceId == 7449423635 then
 end
 
 -- ════════════════════════════════════════════════════════
---  ⚙️ SETTINGS (giữ nguyên)
+--  ⚙️ SETTINGS
 -- ════════════════════════════════════════════════════════
 _G.Settings = {
     AutoFarm = false,
@@ -170,11 +175,11 @@ Player.Idled:Connect(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  ⚡ ULTRA FAST ATTACK (fix: dùng loop task.spawn delay nhỏ, giảm lag + vẫn bypass)
+--  ⚡ ULTRA FAST ATTACK (fix lag + an toàn)
 -- ════════════════════════════════════════════════════════
 spawn(function()
     while true do
-        task.wait(0.02)  -- Delay nhỏ để giảm CPU + anti-detect
+        task.wait(0.02)
         if not _G.Settings.FastAttack then continue end
         
         pcall(function()
@@ -187,7 +192,7 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  🌀 BRING MOB (fix leak: disconnect khi tắt, add random delay)
+--  🌀 BRING MOB (fix leak memory)
 -- ════════════════════════════════════════════════════════
 local BringConnection
 
@@ -222,7 +227,7 @@ function BringMobs(mobName)
 end
 
 -- ════════════════════════════════════════════════════════
---  🛡️ GOD MODE (fix: loop với check off)
+--  🛡️ GOD MODE
 -- ════════════════════════════════════════════════════════
 spawn(function()
     while true do
@@ -238,7 +243,7 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  ⚡ NO ENERGY LOSS (fix tương tự)
+--  ⚡ NO ENERGY LOSS
 -- ════════════════════════════════════════════════════════
 spawn(function()
     while true do
@@ -251,7 +256,7 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  📋 QUEST DATABASE (giữ nguyên)
+--  📋 QUEST DATABASE
 -- ════════════════════════════════════════════════════════
 local QuestDB = {
     [1] = {
@@ -318,11 +323,11 @@ function AutoHaki()
 end
 
 -- ════════════════════════════════════════════════════════
---  🎯 AUTO FARM LOOP (fix: task.wait(0.5) + random delay anti-detect)
+--  🎯 AUTO FARM LOOP
 -- ════════════════════════════════════════════════════════
 spawn(function()
     while true do
-        task.wait(0.5 + math.random(0.1, 0.3))  -- Random delay chống detect
+        task.wait(0.5 + math.random(0.1, 0.3)) -- Random delay anti detect
         if not _G.Settings.AutoFarm or not Character or Humanoid.Health <= 0 then continue end
         
         pcall(function()
@@ -364,14 +369,16 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  🎨 BANANA HUB GUI (giữ nguyên, fix parent PlayerGui)
+--  🎨 BANANA HUB GUI - FULL (fix menu hiện)
 -- ════════════════════════════════════════════════════════
-wait(2.5)
+wait(3.5) -- Delay thêm để đảm bảo load xong
 
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "BananaHubGUI"
-Gui.Parent = Player.PlayerGui  -- Fix: PlayerGui an toàn
+Gui.Parent = PlayerGui
 Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local Main = Instance.new("Frame")
 Main.Name = "Main"
@@ -382,6 +389,7 @@ Main.Position = UDim2.new(0.5, -300, 0.5, -250)
 Main.Size = UDim2.new(0, 600, 0, 500)
 Main.Active = true
 Main.Draggable = true
+Main.Visible = true -- Force visible
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 12)
@@ -416,7 +424,7 @@ CloseBtn.Position = UDim2.new(1, -40, 0.5, -15)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.white
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
 CloseBtn.TextSize = 16
 
 local CloseCorner = Instance.new("UICorner")
@@ -595,7 +603,7 @@ function CreateToggle(parent, name, setting, callback)
             TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 215, 0)}):Play()
             TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
                 Position = UDim2.new(1, -22, 0.5, -10),
-                BackgroundColor3 = Color3.white
+                BackgroundColor3 = Color3.fromRGB(255,255,255)
             }):Play()
         else
             TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 55)}):Play()
@@ -637,6 +645,11 @@ function CreateToggle(parent, name, setting, callback)
         end)
         
         if callback then callback(enabled) end
+        
+        -- Fix BringMob khi toggle
+        if setting == "BringMob" then
+            BringMobs(GetQuest().Mob)
+        end
     end)
     
     parent.CanvasSize = UDim2.new(0, 0, 0, parent.UIListLayout.AbsoluteContentSize.Y + 20)
@@ -825,23 +838,31 @@ end)
 -- ════════════════════════════════════════════════════════
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "🍌 BANANA HUB PREMIUM",
-    Text = "Script loaded successfully! (Fixed 2026)\n🔥 Made by SENKY CODER",
+    Text = "Script loaded successfully!\n🔥 Menu should appear now - Made by SENKY CODER",
     Duration = 5
 })
 
 print([[
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║       🍌 BANANA HUB - PREMIUM EDITION (FIXED) 🍌         ║
+║       🍌 BANANA HUB - PREMIUM EDITION (GUI FIXED) 🍌      ║
 ║                                                           ║
 ║       ✅ Script loaded successfully!                     ║
-║       🔥 Ultra Fast Attack: STABLE                       ║
-║       🌀 Bring Mob: NO LEAK                              ║
-║       🛡️ God Mode: OPTIMIZED                             ║
-║                                                           ║
+║       🔥 Menu should be visible now                      ║
+║       🌀 Bring Mob & Fast Attack: OPTIMIZED              ║
 ║       📌 Version: 2.0 Fixed 2026                         ║
 ║       👤 Made by: SENKY CODER                            ║
 ║       🌟 Sea: ]] .. CurrentSea .. [[                                              ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 ]])
+
+-- Force show menu sau 5s nếu vẫn ko thấy
+task.spawn(function()
+    wait(5)
+    if Main.Visible == false then
+        Main.Visible = true
+        Main.Position = UDim2.new(0.5, -300, 0.5, -250)
+        print("[FORCE SHOW] Menu forced visible!")
+    end
+end)
