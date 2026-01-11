@@ -8,7 +8,7 @@
     ║  ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚══════╝  ║
     ║                                                                                        ║
     ║              🍌 BANANA HUB - PREMIUM EDITION 🍌                                       ║
-    ║              Made by: SENKY CODER | Version: 2.0 (Full Fix 2026)                     ║
+    ║              Made by: SENKY CODER | Version: 2.0 (Full Fix Icon 2026)                ║
     ╚══════════════════════════════════════════════════════════════╝
 ]]
 
@@ -370,7 +370,7 @@ spawn(function()
 end)
 
 -- ════════════════════════════════════════════════════════
---  🎨 BANANA HUB GUI - FULL FIX MENU + THU NHỎ + ẨN
+--  🎨 BANANA HUB GUI - FULL ICON NINJA + ẨN/HIỆN
 -- ════════════════════════════════════════════════════════
 wait(3.5)
 
@@ -381,6 +381,23 @@ Gui.ResetOnSpawn = false
 Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+-- Icon ninja nhỏ (hiện khi menu ẩn)
+local MenuIcon = Instance.new("ImageButton")
+MenuIcon.Name = "MenuIcon"
+MenuIcon.Parent = Gui
+MenuIcon.BackgroundTransparency = 1
+MenuIcon.Position = UDim2.new(1, -80, 1, -80)  -- Góc phải dưới
+MenuIcon.Size = UDim2.new(0, 70, 0, 70)
+MenuIcon.Image = "rbxassetid://11419729917"  -- Logo ninja / Banana Hub
+MenuIcon.ImageTransparency = 0.2
+MenuIcon.Visible = false
+MenuIcon.ZIndex = 10
+
+local IconCorner = Instance.new("UICorner")
+IconCorner.CornerRadius = UDim.new(1, 0)
+IconCorner.Parent = MenuIcon
+
+-- Main Frame
 local Main = Instance.new("Frame")
 Main.Name = "Main"
 Main.Parent = Gui
@@ -417,27 +434,7 @@ Title.TextColor3 = Color3.fromRGB(20, 20, 25)
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Nút Close
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Parent = TopBar
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
-CloseBtn.BorderSizePixel = 0
-CloseBtn.Position = UDim2.new(1, -40, 0.5, -15)
-CloseBtn.Size = UDim2.new(0, 35, 0, 35)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
-CloseBtn.TextSize = 20
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 8)
-CloseCorner.Parent = CloseBtn
-
-CloseBtn.MouseButton1Click:Connect(function()
-    Gui:Destroy()
-end)
-
--- Nút Minimize (to hơn, dễ click)
+-- Nút Minimize
 local MinBtn = Instance.new("TextButton")
 MinBtn.Parent = TopBar
 MinBtn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
@@ -465,29 +462,37 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Nút Hide (ẩn hẳn menu)
-local HideBtn = Instance.new("TextButton")
-HideBtn.Parent = TopBar
-HideBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-HideBtn.BorderSizePixel = 0
-HideBtn.Position = UDim2.new(1, -130, 0.5, -15)
-HideBtn.Size = UDim2.new(0, 35, 0, 35)
-HideBtn.Font = Enum.Font.GothamBold
-HideBtn.Text = "H"
-HideBtn.TextColor3 = Color3.fromRGB(255,255,255)
-HideBtn.TextSize = 20
+-- Nút X: Đóng menu về icon
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Parent = TopBar
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Position = UDim2.new(1, -40, 0.5, -15)
+CloseBtn.Size = UDim2.new(0, 35, 0, 35)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.TextSize = 20
 
-local HideCorner = Instance.new("UICorner")
-HideCorner.CornerRadius = UDim.new(0, 8)
-HideCorner.Parent = HideBtn
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseBtn
 
-HideBtn.MouseButton1Click:Connect(function()
-    Main.Visible = not Main.Visible
-    if not Main.Visible then
-        HideBtn.Text = "S"
-    else
-        HideBtn.Text = "H"
-    end
+CloseBtn.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    MenuIcon.Visible = true
+    print("[MENU] Đóng về icon ninja")
+end)
+
+-- Click icon để hiện menu full
+MenuIcon.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    Main.Size = UDim2.new(0, 600, 0, 500)
+    Main.Position = UDim2.new(0.5, -300, 0.5, -250)
+    MenuIcon.Visible = false
+    isMinimized = false
+    MinBtn.Text = "-"
+    print("[MENU] Hiện full từ icon")
 end)
 
 -- Hotkey M toggle minimize
@@ -858,16 +863,17 @@ end)
 -- FINAL NOTIFICATION + FORCE SHOW
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "🍌 BANANA HUB PREMIUM",
-    Text = "Loaded! Menu hiện - Nhấn '-' hoặc 'M' thu nhỏ, 'H' ẩn hẳn\n🔥 SENKY CODER",
-    Duration = 5
+    Text = "Loaded! Menu hiện - Nhấn X đóng về icon ninja, ấn icon mở lại\nPhím M thu nhỏ\n🔥 SENKY CODER",
+    Duration = 6
 })
 
-print("[DEBUG] Banana Hub Loaded - Menu visible! Nhấn M để thu nhỏ.")
+print("[DEBUG] Banana Hub Loaded - Menu visible! Nhấn X để đóng về icon.")
 
--- Force show + center
+-- Force show full menu lần đầu
 task.spawn(function()
     wait(5)
     Main.Visible = true
+    MenuIcon.Visible = false
     Main.Position = UDim2.new(0.5, -300, 0.5, -250)
-    print("[FORCE] Menu forced visible & centered!")
+    print("[FORCE] Menu full hiện lần đầu!")
 end)
