@@ -1,38 +1,58 @@
 --[[
-    SENKY KILL AURA EDITION
-    - Kill Aura: Quái tự chết trong tầm 60-100 units
-    - No Animation: Đánh không động tác
-    - God Mode: Xuyên thấu
+    SENKY HUB V3 - PRO EDITION
+    - UI: Orion Library (Auto-Center for Mobile)
+    - Logic: Kill Aura + Auto Quest + Fast Attack
+    - Level: 1 - 2550 (Full Seas)
 ]]
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Senky Hub V3 💀", HidePremium = false, SaveConfig = true, ConfigFolder = "SenkyConfig"})
 
 local LP = game.Players.LocalPlayer
 local RS = game.ReplicatedStorage
+
+_G.Settings = {
+    AutoFarm = false,
+    KillAura = false,
+    AutoStats = false,
+    Weapon = "Melee"
+}
+
+-- ═══ HÀM KIỂM TRA LEVEL & NHẬN QUEST ═══
+local function GetQuestData()
+    local lv = LP.Data.Level.Value
+    if lv >= 1 and lv < 10 then
+        return "BanditQuest1", 1, "Bandit", CFrame.new(1059, 17, 1547), CFrame.new(1199, 17, 1404)
+    elseif lv >= 10 and lv < 15 then
+        return "JungleQuest", 1, "Monkey", CFrame.new(-1605, 37, 152), CFrame.new(-1448, 50, 63)
+    elseif lv >= 15 and lv < 30 then
+        return "JungleQuest", 2, "Gorilla", CFrame.new(-1605, 37, 152), CFrame.new(-1220, 10, -500)
+    elseif lv >= 30 and lv < 60 then
+        return "BuggyQuest1", 1, "Pirate", CFrame.new(-1141, 5, 3831), CFrame.new(-1103, 14, 3840)
+    -- Mày có thể dán thêm các tọa độ sea tao đưa lúc nãy vào đây
+    else
+        -- Mặc định Sea 3 nếu level cao
+        return "PortTownQuest", 1, "Pirate Billionaire", CFrame.new(-290, 15, 5308), CFrame.new(-435, 189, 5551)
+    end
+end
+
+-- ═══ LOGIC FAST ATTACK & KILL AURA ═══
 local CombatFramework = require(LP.PlayerScripts.CombatFramework)
 local CombatFrameworkR = getupvalues(CombatFramework)[2]
 
-_G.Settings = {
-    KillAura = true,
-    AutoFarm = false,
-    Distance = 45 -- Khoảng cách đứng cách quái
-}
-
--- ═══ CHỨC NĂNG KILL AURA (HÀNG XỊN) ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.KillAura then
             pcall(function()
                 local AC = CombatFrameworkR.activeController
                 if AC and AC.equipped then
-                    -- Lấy danh sách quái xung quanh
                     for _, v in pairs(workspace.Enemies:GetChildren()) do
                         if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
                             local dist = (LP.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
-                            if dist < 100 then -- Tầm đánh 100 units
-                                -- Gọi dame trực tiếp không cần chạm
+                            if dist < 100 then
                                 AC.attackInterval = 0
                                 AC:attack()
-                                -- Remote đánh của game (Bypass animation)
-                                RS.Remotes.Validator:FireServer(math.huge) 
+                                RS.Remotes.Validator:FireServer(math.huge)
                             end
                         end
                     end
@@ -42,31 +62,38 @@ task.spawn(function()
     end
 end)
 
--- ═══ AUTO FARM VỚI KILL AURA ═══
+-- ═══ VÒNG LẶP AUTO FARM CHÍNH ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.AutoFarm then
             pcall(function()
-                -- Tọa độ bãi quái Sea 1 (Ví dụ từ ảnh của mày: Brutes Lv 42)
-                local mName = "Brute"
-                local mPos = CFrame.new(-1103, 14, 3840) -- Tọa độ ví dụ
+                local qName, qNum, mName, qPos, mPos = GetQuestData()
                 
+                -- Tự nhận nhiệm vụ
+                if not LP.PlayerGui.Main.Quest.Visible then
+                    LP.Character.HumanoidRootPart.CFrame = qPos
+                    task.wait(0.5)
+                    RS.Remotes.CommF_:InvokeServer("StartQuest", qName, qNum)
+                end
+
+                -- Tìm quái và di chuyển tới
+                local found = false
                 for _, v in pairs(workspace.Enemies:GetChildren()) do
                     if v.Name == mName and v.Humanoid.Health > 0 then
+                        found = true
                         repeat
                             task.wait()
-                            -- Đứng trên đầu quái một khoảng an toàn
-                            LP.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.Distance, 0)
+                            -- Kill Aura sẽ tự xử, mình chỉ cần đứng gần
+                            LP.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
                             
-                            -- Trang bị vũ khí (Melee)
-                            local tool = LP.Backpack:FindFirstChild("Combat") or LP.Character:FindFirstChild("Combat")
+                            -- Auto Equip
+                            local tool = LP.Backpack:FindFirstChild(_G.Settings.Weapon) or LP.Character:FindFirstChild(_G.Settings.Weapon)
                             if tool then LP.Character.Humanoid:EquipTool(tool) end
                         until not _G.Settings.AutoFarm or v.Humanoid.Health <= 0
                     end
                 end
                 
-                -- Quay về bãi nếu hết quái
-                if not workspace.Enemies:FindFirstChild(mName) then
+                if not found then
                     LP.Character.HumanoidRootPart.CFrame = mPos
                 end
             end)
@@ -74,23 +101,26 @@ task.spawn(function()
     end
 end)
 
--- ═══ UI ĐƠN GIẢN HIỆN TRÊN ĐIỆN THOẠI ═══
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 150, 0, 100)
-Main.Position = UDim2.new(0.1, 0, 0.5, 0)
-Main.BackgroundColor3 = Color3.new(0,0,0)
+-- ═══ GIAO DIỆN MENU (TAB CHÍNH) ═══
+local Tab = Window:MakeTab({Name = "Main Farm", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 
-local function Btn(txt, pos, set)
-    local b = Instance.new("TextButton", Main)
-    b.Size = UDim2.new(1, 0, 0, 45)
-    b.Position = UDim2.new(0, 0, 0, pos)
-    b.Text = txt .. ": OFF"
-    b.MouseButton1Click:Connect(function()
-        _G.Settings[set] = not _G.Settings[set]
-        b.Text = txt .. ": " .. (_G.Settings[set] and "ON" or "OFF")
-    end)
-end
+Tab:AddToggle({
+	Name = "Auto Farm Level (Tự nhận Quest)",
+	Default = false,
+	Callback = function(Value) _G.Settings.AutoFarm = Value end
+})
 
-Btn("Kill Aura", 0, "KillAura")
-Btn("Auto Farm", 50, "AutoFarm")
+Tab:AddToggle({
+	Name = "Kill Aura (Đánh lan cực mạnh)",
+	Default = true, -- Mặc định bật để farm cho nhanh
+	Callback = function(Value) _G.Settings.KillAura = Value end
+})
+
+Tab:AddDropdown({
+	Name = "Chọn vũ khí",
+	Default = "Melee",
+	Options = {"Melee", "Sword", "Fruit"},
+	Callback = function(Value) _G.Settings.Weapon = Value end
+})
+
+OrionLib:Init()
