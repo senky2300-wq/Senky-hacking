@@ -1,26 +1,35 @@
-
 --[[
-    SENKY HUB V4.0 - AFK GOD MODE FARM
-    ✅ Quái tự mất máu khi ở gần (No Kill Aura)
-    ✅ Bay trên đầu quái tránh dame
-    ✅ Tự động nhận quest
-    ✅ Tự động nhập code
-    ✅ UI Banana Style
+    SENKY HUB V4.1 - FIX UI NOT SHOWING
+    ✅ Đợi game load xong mới tạo UI
+    ✅ Thêm keybind để toggle UI (Right Ctrl)
+    ✅ Fix CoreGui protection
 ]]
+
+-- ══════════════════════════════════════════
+--     WAIT FOR GAME TO LOAD
+-- ══════════════════════════════════════════
+repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game.Players.LocalPlayer
+repeat task.wait() until game.Players.LocalPlayer.Character
+
+task.wait(2) -- Đợi thêm 2s cho chắc
 
 local LP = game:GetService("Players").LocalPlayer
 local RS = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
 
--- ═══════════════════════════════════════
---          SETTINGS
--- ═══════════════════════════════════════
+print("🔄 Loading Senky Hub...")
+
+-- ══════════════════════════════════════════
+--     SETTINGS
+-- ══════════════════════════════════════════
 _G.Settings = {
     AutoFarm = false,
     AutoQuest = false,
     AutoRedeem = false,
-    FlyHeight = 8,        -- Bay cao bao nhiêu trên đầu quái
-    KillRadius = 25,      -- Bán kính quái tự mất máu
+    FlyHeight = 8,
+    KillRadius = 25,
     BringMobs = false
 }
 
@@ -29,13 +38,12 @@ _G.Codes = {
     "THEGREATACE",
     "SUB2GAMERROBOT_EXP1",
     "Sub2UncleKizaru",
-    "SUB2FER999",
-    -- Thêm code khác vào đây
+    "SUB2FER999"
 }
 
--- ═══════════════════════════════════════
---          CORE: DAMAGE AURA (NO ANIMATION)
--- ═══════════════════════════════════════
+-- ══════════════════════════════════════════
+--     DAMAGE AURA (GOD MODE)
+-- ══════════════════════════════════════════
 task.spawn(function()
     while task.wait(0.3) do
         if _G.Settings.AutoFarm then
@@ -43,18 +51,14 @@ task.spawn(function()
                 local char = LP.Character
                 if not char or not char:FindFirstChild("HumanoidRootPart") then return end
                 
-                for _, mob in pairs(workspace.Enemies:GetChildren()) do
+                for _, mob in pairs(game.Workspace.Enemies:GetChildren()) do
                     if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 
                        and mob:FindFirstChild("HumanoidRootPart") then
                         
                         local distance = (char.HumanoidRootPart.Position - mob.HumanoidRootPart.Position).Magnitude
                         
                         if distance <= _G.Settings.KillRadius then
-                            -- BYPASS: Gây sát thương trực tiếp không cần vũ khí
                             mob.Humanoid.Health = 0
-                            
-                            -- Hoặc dùng Remote nếu server check:
-                            -- RS.Remotes.CommF_:InvokeServer("DealDamage", mob, 99999)
                         end
                     end
                 end
@@ -63,9 +67,9 @@ task.spawn(function()
     end
 end)
 
--- ═══════════════════════════════════════
---          MOB BRING + AUTO FARM
--- ═══════════════════════════════════════
+-- ══════════════════════════════════════════
+--     AUTO FARM LOOP
+-- ══════════════════════════════════════════
 task.spawn(function()
     while task.wait(0.1) do
         if _G.Settings.AutoFarm then
@@ -76,7 +80,6 @@ task.spawn(function()
                 local lv = LP.Data.Level.Value
                 local qName, qNum, mName, mPos
                 
-                -- LEVEL CONFIG (Tự động theo level)
                 if lv >= 90 and lv < 120 then
                     qName, qNum = "SnowQuest", 2
                     mName = "Snowman"
@@ -87,7 +90,7 @@ task.spawn(function()
                     mPos = CFrame.new(-5200, 30, 4050)
                 end
                 
-                -- AUTO QUEST
+                -- Auto Quest
                 if _G.Settings.AutoQuest then
                     local questGui = LP.PlayerGui:FindFirstChild("Main")
                     if questGui and questGui:FindFirstChild("Quest") and not questGui.Quest.Visible then
@@ -95,9 +98,8 @@ task.spawn(function()
                     end
                 end
                 
-                -- TÌM QUÁI ĐỂ FARM
                 local targetMob = nil
-                for _, v in pairs(workspace.Enemies:GetChildren()) do
+                for _, v in pairs(game.Workspace.Enemies:GetChildren()) do
                     if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 
                        and v:FindFirstChild("HumanoidRootPart") then
                         targetMob = v
@@ -106,12 +108,10 @@ task.spawn(function()
                 end
                 
                 if targetMob then
-                    -- BAY TRÊN ĐẦU QUÁI (TRÁNH DAME)
                     char.HumanoidRootPart.CFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.FlyHeight, 0)
                     
-                    -- GOM QUÁI VỀ (NẾU BẬT)
                     if _G.Settings.BringMobs then
-                        for _, mob in pairs(workspace.Enemies:GetChildren()) do
+                        for _, mob in pairs(game.Workspace.Enemies:GetChildren()) do
                             if mob.Name == mName and mob:FindFirstChild("HumanoidRootPart") 
                                and mob.Humanoid.Health > 0 then
                                 mob.HumanoidRootPart.CanCollide = false
@@ -121,7 +121,6 @@ task.spawn(function()
                         end
                     end
                 else
-                    -- ĐI ĐẾN BÃI FARM
                     if mPos then
                         char.HumanoidRootPart.CFrame = mPos
                     end
@@ -131,53 +130,50 @@ task.spawn(function()
     end
 end)
 
--- ═══════════════════════════════════════
---          AUTO REDEEM CODES
--- ═══════════════════════════════════════
-task.spawn(function()
-    task.wait(5) -- Đợi game load
-    if _G.Settings.AutoRedeem then
-        for _, code in pairs(_G.Codes) do
-            pcall(function()
-                RS.Remotes.Redeem:InvokeServer(code)
-                -- Hoặc:
-                -- RS.Remotes.CommF_:InvokeServer("Redeem", code)
-                task.wait(1)
-            end)
-        end
-        print("✅ Đã nhập xong tất cả codes!")
-    end
-end)
-
--- ═══════════════════════════════════════
---          ANTI-AFK & ANTI-KICK
--- ═══════════════════════════════════════
+-- ══════════════════════════════════════════
+--     ANTI AFK
+-- ══════════════════════════════════════════
 local VirtualUser = game:GetService("VirtualUser")
 LP.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- ═══════════════════════════════════════
---          UI LIBRARY (BANANA STYLE)
--- ═══════════════════════════════════════
+-- ══════════════════════════════════════════
+--     UI LIBRARY
+-- ══════════════════════════════════════════
 local Library = {}
 
 function Library:CreateWindow(title)
+    -- Xóa UI cũ nếu có
+    if game.CoreGui:FindFirstChild("SenkyHubUI") then
+        game.CoreGui:FindFirstChild("SenkyHubUI"):Destroy()
+    end
+    
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "SenkyHub"
-    ScreenGui.Parent = game.CoreGui
+    ScreenGui.Name = "SenkyHubUI"
+    ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
+    -- Try CoreGui first, fallback to PlayerGui
+    local success = pcall(function()
+        ScreenGui.Parent = game:GetService("CoreGui")
+    end)
+    
+    if not success then
+        ScreenGui.Parent = LP:WaitForChild("PlayerGui")
+    end
+    
     local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
     MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.Size = UDim2.new(0, 420, 0, 480)
     MainFrame.ClipsDescendants = true
     
-    -- Gradient
     local Gradient = Instance.new("UIGradient")
     Gradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 35)),
@@ -197,6 +193,7 @@ function Library:CreateWindow(title)
     
     -- Title Bar
     local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
     TitleBar.Parent = MainFrame
     TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
     TitleBar.BorderSizePixel = 0
@@ -210,7 +207,7 @@ function Library:CreateWindow(title)
     Title.Parent = TitleBar
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 15, 0, 0)
-    Title.Size = UDim2.new(1, -15, 1, 0)
+    Title.Size = UDim2.new(1, -60, 1, 0)
     Title.Font = Enum.Font.GothamBold
     Title.Text = title
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -219,6 +216,7 @@ function Library:CreateWindow(title)
     
     -- Close Button
     local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Name = "CloseButton"
     CloseBtn.Parent = TitleBar
     CloseBtn.BackgroundColor3 = Color3.fromRGB(235, 64, 52)
     CloseBtn.Position = UDim2.new(1, -42, 0, 10)
@@ -227,18 +225,21 @@ function Library:CreateWindow(title)
     CloseBtn.Text = "✕"
     CloseBtn.TextColor3 = Color3.white
     CloseBtn.TextSize = 18
+    CloseBtn.AutoButtonColor = false
     
     local CloseCorner = Instance.new("UICorner")
     CloseCorner.CornerRadius = UDim.new(0, 8)
     CloseCorner.Parent = CloseBtn
     
     CloseBtn.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
+        MainFrame.Visible = false
     end)
     
     -- Content
     local Content = Instance.new("ScrollingFrame")
+    Content.Name = "Content"
     Content.Parent = MainFrame
+    Content.Active = true
     Content.BackgroundTransparency = 1
     Content.Position = UDim2.new(0, 12, 0, 62)
     Content.Size = UDim2.new(1, -24, 1, -74)
@@ -256,34 +257,51 @@ function Library:CreateWindow(title)
         Content.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 12)
     end)
     
-    -- Draggable
-    local dragging, dragInput, dragStart, startPos
+    -- Make Draggable
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
     
     TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = MainFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
     end)
     
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-            local delta = input.Position - dragStart
-            MainFrame.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
+    TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
         end
     end)
     
-    TitleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
         end
     end)
     
-    return {Content = Content, Frame = MainFrame}
+    -- Keybind to toggle (Right Ctrl)
+    UIS.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == Enum.KeyCode.RightControl then
+            MainFrame.Visible = not MainFrame.Visible
+        end
+    end)
+    
+    return {Content = Content, Frame = MainFrame, ScreenGui = ScreenGui}
 end
 
 function Library:CreateToggle(parent, text, emoji, default, callback)
@@ -307,7 +325,6 @@ function Library:CreateToggle(parent, text, emoji, default, callback)
     Label.TextSize = 15
     Label.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Toggle Switch
     local Switch = Instance.new("Frame")
     Switch.Parent = ToggleFrame
     Switch.BackgroundColor3 = default and Color3.fromRGB(52, 211, 153) or Color3.fromRGB(55, 55, 70)
@@ -335,6 +352,7 @@ function Library:CreateToggle(parent, text, emoji, default, callback)
     Button.BackgroundTransparency = 1
     Button.Size = UDim2.new(1, 0, 1, 0)
     Button.Text = ""
+    Button.AutoButtonColor = false
     
     Button.MouseButton1Click:Connect(function()
         toggled = not toggled
@@ -355,7 +373,7 @@ function Library:CreateLabel(parent, text)
     local Label = Instance.new("Frame")
     Label.Parent = parent
     Label.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-    Label.Size = UDim2.new(1, 0, 0, 70)
+    Label.Size = UDim2.new(1, 0, 0, 80)
     
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 10)
@@ -372,23 +390,27 @@ function Library:CreateLabel(parent, text)
     Text.TextSize = 13
     Text.TextWrapped = true
     Text.TextYAlignment = Enum.TextYAlignment.Top
+    Text.TextXAlignment = Enum.TextXAlignment.Left
 end
 
--- ═══════════════════════════════════════
---          CREATE UI
--- ═══════════════════════════════════════
-local Window = Library:CreateWindow("🍌 SENKY HUB V4.0 - GOD MODE")
+-- ══════════════════════════════════════════
+--     CREATE UI
+-- ══════════════════════════════════════════
+local Window = Library:CreateWindow("🍌 SENKY HUB V4.1 - GOD MODE")
 
 Library:CreateToggle(Window.Content, "Auto Farm (God Mode)", "⚡", false, function(v)
     _G.Settings.AutoFarm = v
+    print("Auto Farm:", v)
 end)
 
 Library:CreateToggle(Window.Content, "Auto Quest", "📋", false, function(v)
     _G.Settings.AutoQuest = v
+    print("Auto Quest:", v)
 end)
 
 Library:CreateToggle(Window.Content, "Bring All Mobs", "🧲", false, function(v)
     _G.Settings.BringMobs = v
+    print("Bring Mobs:", v)
 end)
 
 Library:CreateToggle(Window.Content, "Auto Redeem Codes", "🎁", false, function(v)
@@ -401,10 +423,12 @@ Library:CreateToggle(Window.Content, "Auto Redeem Codes", "🎁", false, functio
                     task.wait(1)
                 end)
             end
+            print("✅ Redeemed all codes!")
         end)
     end
 end)
 
-Library:CreateLabel(Window.Content, "📍 Level: Auto Detect\n💀 Kill Method: Damage Aura (No Weapon)\n✈️ Fly Height: 8 studs\n🎯 Kill Radius: 25 studs")
+Library:CreateLabel(Window.Content, "📍 Level: Auto Detect\n💀 Kill: Damage Aura (No Weapon)\n✈️ Fly Height: 8 studs\n🎯 Kill Radius: 25 studs\n⌨️ Toggle UI: Right Ctrl")
 
-print("✅ SENKY HUB V4.0 LOADED - GOD MODE ACTIVATED!")
+print("✅ SENKY HUB V4.1 LOADED!")
+print("⌨️ Press RIGHT CTRL to toggle UI")
