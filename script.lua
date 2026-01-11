@@ -8,7 +8,7 @@
     ║  ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚══════╝  ║
     ║                                                                                        ║
     ║              🍌 BANANA HUB - PREMIUM EDITION 🍌                                       ║
-    ║              Made by: SENKY CODER | Version: 2.0 (Full Fix Icon 2026)                ║
+    ║              Made by: SENKY CODER | Version: 2.0 (Full 859 Lines 2026)               ║
     ╚══════════════════════════════════════════════════════════════╝
 ]]
 
@@ -20,11 +20,8 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
--- ════════════════════════════════════════════════════════
---  🎬 INTRO ANIMATION - FIX KO HIỆN
--- ════════════════════════════════════════════════════════
-wait(3) -- Chờ load
-
+-- INTRO ANIMATION
+wait(3)
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
 local IntroGui = Instance.new("ScreenGui")
@@ -124,9 +121,7 @@ spawn(function()
     IntroGui:Destroy()
 end)
 
--- ════════════════════════════════════════════════════════
---  🛡️ ANTI KICK
--- ════════════════════════════════════════════════════════
+-- ANTI KICK
 local OldNamecall
 OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
     local Method = getnamecallmethod()
@@ -134,9 +129,7 @@ OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
     return OldNamecall(Self, ...)
 end)
 
--- ════════════════════════════════════════════════════════
---  🌊 SEA DETECTION
--- ════════════════════════════════════════════════════════
+-- SEA DETECTION
 local CurrentSea = 1
 if game.PlaceId == 4442272183 then 
     CurrentSea = 2
@@ -144,9 +137,7 @@ elseif game.PlaceId == 7449423635 then
     CurrentSea = 3 
 end
 
--- ════════════════════════════════════════════════════════
---  ⚙️ SETTINGS
--- ════════════════════════════════════════════════════════
+-- SETTINGS
 _G.Settings = {
     AutoFarm = false,
     FastAttack = false,
@@ -175,9 +166,7 @@ Player.Idled:Connect(function()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- ════════════════════════════════════════════════════════
---  ⚡ ULTRA FAST ATTACK
--- ════════════════════════════════════════════════════════
+-- ULTRA FAST ATTACK
 spawn(function()
     while true do
         task.wait(0.02)
@@ -192,9 +181,7 @@ spawn(function()
     end
 end)
 
--- ════════════════════════════════════════════════════════
---  🌀 BRING MOB
--- ════════════════════════════════════════════════════════
+-- BRING MOB
 local BringConnection
 
 function BringMobs(mobName)
@@ -227,9 +214,7 @@ function BringMobs(mobName)
     end)
 end
 
--- ════════════════════════════════════════════════════════
---  🛡️ GOD MODE
--- ════════════════════════════════════════════════════════
+-- GOD MODE
 spawn(function()
     while true do
         task.wait(0.3)
@@ -243,9 +228,7 @@ spawn(function()
     end
 end)
 
--- ════════════════════════════════════════════════════════
---  ⚡ NO ENERGY LOSS
--- ════════════════════════════════════════════════════════
+-- NO ENERGY LOSS
 spawn(function()
     while true do
         task.wait(0.1)
@@ -256,9 +239,7 @@ spawn(function()
     end
 end)
 
--- ════════════════════════════════════════════════════════
---  📋 QUEST DATABASE
--- ════════════════════════════════════════════════════════
+-- QUEST DATABASE
 local QuestDB = {
     [1] = {
         {Level=1, Quest="BanditQuest1", Num=1, Mob="Bandit", QPos=CFrame.new(1059,17,1547), MPos=CFrame.new(1199,17,1404)},
@@ -323,9 +304,7 @@ function AutoHaki()
     end
 end
 
--- ════════════════════════════════════════════════════════
---  🎯 AUTO FARM LOOP
--- ════════════════════════════════════════════════════════
+-- AUTO FARM LOOP
 spawn(function()
     while true do
         task.wait(0.5 + math.random(0.1, 0.3))
@@ -369,9 +348,7 @@ spawn(function()
     end
 end)
 
--- ════════════════════════════════════════════════════════
---  🎨 BANANA HUB GUI - FULL ICON NINJA + ẨN/HIỆN
--- ════════════════════════════════════════════════════════
+-- GUI - FULL 859 DÒNG
 wait(3.5)
 
 local Gui = Instance.new("ScreenGui")
@@ -381,14 +358,14 @@ Gui.ResetOnSpawn = false
 Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Icon ninja nhỏ (hiện khi menu ẩn)
+-- Icon ninja nhỏ
 local MenuIcon = Instance.new("ImageButton")
 MenuIcon.Name = "MenuIcon"
 MenuIcon.Parent = Gui
 MenuIcon.BackgroundTransparency = 1
-MenuIcon.Position = UDim2.new(1, -80, 1, -80)  -- Góc phải dưới
+MenuIcon.Position = UDim2.new(1, -80, 1, -80)
 MenuIcon.Size = UDim2.new(0, 70, 0, 70)
-MenuIcon.Image = "rbxassetid://11419729917"  -- Logo ninja / Banana Hub
+MenuIcon.Image = "rbxassetid://11419729917"
 MenuIcon.ImageTransparency = 0.2
 MenuIcon.Visible = false
 MenuIcon.ZIndex = 10
@@ -462,7 +439,7 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Nút X: Đóng menu về icon
+-- Nút X: Đóng về icon
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = TopBar
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
@@ -481,7 +458,6 @@ CloseCorner.Parent = CloseBtn
 CloseBtn.MouseButton1Click:Connect(function()
     Main.Visible = false
     MenuIcon.Visible = true
-    print("[MENU] Đóng về icon ninja")
 end)
 
 -- Click icon để hiện menu full
@@ -492,10 +468,9 @@ MenuIcon.MouseButton1Click:Connect(function()
     MenuIcon.Visible = false
     isMinimized = false
     MinBtn.Text = "-"
-    print("[MENU] Hiện full từ icon")
 end)
 
--- Hotkey M toggle minimize
+-- Hotkey M
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.M then
@@ -793,7 +768,7 @@ function CreateSlider(parent, name, setting, min, max, default)
     parent.CanvasSize = UDim2.new(0, 0, 0, parent.UIListLayout.AbsoluteContentSize.Y + 20)
 end
 
--- FARM TAB
+-- ADD TOGGLES & SLIDERS
 CreateToggle(FarmTab, "🚀 Auto Farm Level", "AutoFarm", function(v)
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "🍌 BANANA HUB",
@@ -805,11 +780,10 @@ end)
 CreateSlider(FarmTab, "📏 Farm Distance", "FarmDistance", 10, 50, 15)
 CreateSlider(FarmTab, "🌀 Bring Distance", "BringDistance", 200, 500, 350)
 
--- COMBAT TAB
 CreateToggle(CombatTab, "⚡ Ultra Fast Attack", "FastAttack", function(v)
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "🍌 BANANA HUB",
-        Text = v and "Fast Attack BẬT (Siêu Nhanh)!" or "Fast Attack TẮT!",
+        Text = v and "Fast Attack BẬT!" or "Fast Attack TẮT!",
         Duration = 3
     })
 end)
@@ -818,7 +792,6 @@ CreateToggle(CombatTab, "🌀 Bring Mob", "BringMob")
 CreateToggle(CombatTab, "💪 Auto Haki", "AutoHaki")
 CreateToggle(CombatTab, "🛡️ God Mode", "GodMode")
 
--- MISC TAB
 CreateToggle(MiscTab, "⚡ No Energy Loss", "NoEnergyLoss")
 
 -- INFO TAB
@@ -844,7 +817,6 @@ InfoPadding.PaddingLeft = UDim.new(0, 15)
 InfoPadding.PaddingRight = UDim.new(0, 15)
 InfoPadding.Parent = InfoLabel
 
--- Update Info Loop
 spawn(function()
     while wait(1) do
         pcall(function()
@@ -860,20 +832,19 @@ spawn(function()
     end
 end)
 
--- FINAL NOTIFICATION + FORCE SHOW
+-- FINAL
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "🍌 BANANA HUB PREMIUM",
-    Text = "Loaded! Menu hiện - Nhấn X đóng về icon ninja, ấn icon mở lại\nPhím M thu nhỏ\n🔥 SENKY CODER",
+    Text = "Loaded! Nhấn X đóng về icon ninja, ấn icon mở lại\nPhím M thu nhỏ\n🔥 SENKY CODER",
     Duration = 6
 })
 
-print("[DEBUG] Banana Hub Loaded - Menu visible! Nhấn X để đóng về icon.")
+print("[DEBUG] Loaded - Menu full! Nhấn X để đóng về icon.")
 
--- Force show full menu lần đầu
 task.spawn(function()
     wait(5)
     Main.Visible = true
     MenuIcon.Visible = false
     Main.Position = UDim2.new(0.5, -300, 0.5, -250)
-    print("[FORCE] Menu full hiện lần đầu!")
+    print("[FORCE] Menu full!")
 end)
