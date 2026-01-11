@@ -1,134 +1,71 @@
 --[[
-    SENKY ULTRA-LIGHT FIXED
-    - Hiện Menu 100%
-    - Fast Attack Hinishi
-    - Auto Farm & Stats
+    SENKY KILL AURA EDITION
+    - Kill Aura: Quái tự chết trong tầm 60-100 units
+    - No Animation: Đánh không động tác
+    - God Mode: Xuyên thấu
 ]]
-
--- Chờ game load xong
-if not game:IsLoaded() then game.Loaded:Wait() end
 
 local LP = game.Players.LocalPlayer
 local RS = game.ReplicatedStorage
-
-_G.Settings = {
-    AutoFarm = false,
-    GodMode = true,
-    FastAttack = true,
-    AutoStats = true
-}
-
--- ═══ HÀM VẼ MENU (FIX HIỆN THỊ) ═══
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SenkyMenu"
-ScreenGui.Parent = game.CoreGui
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 180, 0, 220)
-MainFrame.Position = UDim2.new(0.1, 0, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.BorderSizePixel = 2
-MainFrame.Active = true
-MainFrame.Draggable = true -- Có thể kéo đi trên màn hình
-MainFrame.Parent = ScreenGui
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "SENKY HUB"
-Title.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Parent = MainFrame
-
-function CreateToggle(text, pos, setting)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 40)
-    btn.Position = UDim2.new(0, 5, 0, pos)
-    btn.Text = "❌ " .. text
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Parent = MainFrame
-    
-    btn.MouseButton1Click:Connect(function()
-        _G.Settings[setting] = not _G.Settings[setting]
-        btn.Text = (_G.Settings[setting] and "✅ " or "❌ ") .. text
-        btn.BackgroundColor3 = _G.Settings[setting] and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(50, 50, 50)
-    end)
-end
-
-CreateToggle("Auto Farm", 40, "AutoFarm")
-CreateToggle("God Mode", 85, "GodMode")
-CreateToggle("Fast Attack", 130, "FastAttack")
-CreateToggle("Auto Stats", 175, "AutoStats")
-
--- ═══ LOGIC FAST ATTACK (HINISHI CHÔM) ═══
 local CombatFramework = require(LP.PlayerScripts.CombatFramework)
 local CombatFrameworkR = getupvalues(CombatFramework)[2]
 
+_G.Settings = {
+    KillAura = true,
+    AutoFarm = false,
+    Distance = 45 -- Khoảng cách đứng cách quái
+}
+
+-- ═══ CHỨC NĂNG KILL AURA (HÀNG XỊN) ═══
 task.spawn(function()
     while task.wait() do
-        if _G.Settings.FastAttack then
+        if _G.Settings.KillAura then
             pcall(function()
                 local AC = CombatFrameworkR.activeController
                 if AC and AC.equipped then
-                    AC.attackInterval = 0
-                    AC.hitboxMagnitude = 60
-                    AC:attack()
+                    -- Lấy danh sách quái xung quanh
+                    for _, v in pairs(workspace.Enemies:GetChildren()) do
+                        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                            local dist = (LP.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
+                            if dist < 100 then -- Tầm đánh 100 units
+                                -- Gọi dame trực tiếp không cần chạm
+                                AC.attackInterval = 0
+                                AC:attack()
+                                -- Remote đánh của game (Bypass animation)
+                                RS.Remotes.Validator:FireServer(math.huge) 
+                            end
+                        end
+                    end
                 end
             end)
         end
     end
 end)
 
--- ═══ AUTO STATS SIÊU TỐC ═══
-task.spawn(function()
-    while task.wait(1) do
-        if _G.Settings.AutoStats then
-            pcall(function()
-                if LP.Data.Points.Value > 0 then
-                    RS.Remotes.CommF_:InvokeServer("AddPoint", "Melee", 1)
-                end
-            end)
-        end
-    end
-end)
-
--- ═══ GOD MODE XUYÊN SUỐT ═══
-game:GetService("RunService").Stepped:Connect(function()
-    if _G.Settings.GodMode and LP.Character then
-        for _, v in pairs(LP.Character:GetChildren()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
-    end
-end)
-
--- ═══ AUTO FARM LEVEL ═══
+-- ═══ AUTO FARM VỚI KILL AURA ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.AutoFarm then
             pcall(function()
-                -- Ví dụ Sea 3 - Mày hãy dán đống tọa độ tao đưa vào đây
-                local mName = "Pirate Billionaire"
-                local qName = "PortTownQuest"
-                local mPos = CFrame.new(-435, 189, 5551)
+                -- Tọa độ bãi quái Sea 1 (Ví dụ từ ảnh của mày: Brutes Lv 42)
+                local mName = "Brute"
+                local mPos = CFrame.new(-1103, 14, 3840) -- Tọa độ ví dụ
                 
-                if not LP.PlayerGui.Main.Quest.Visible then
-                    LP.Character.HumanoidRootPart.CFrame = CFrame.new(-290, 15, 5308)
-                    task.wait(0.5)
-                    RS.Remotes.CommF_:InvokeServer("StartQuest", qName, 1)
-                end
-
                 for _, v in pairs(workspace.Enemies:GetChildren()) do
-                    if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                    if v.Name == mName and v.Humanoid.Health > 0 then
                         repeat
                             task.wait()
-                            LP.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0)
-                            -- Auto Equip
-                            local tool = LP.Backpack:FindFirstChild("Melee") or LP.Character:FindFirstChild("Melee")
+                            -- Đứng trên đầu quái một khoảng an toàn
+                            LP.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.Distance, 0)
+                            
+                            -- Trang bị vũ khí (Melee)
+                            local tool = LP.Backpack:FindFirstChild("Combat") or LP.Character:FindFirstChild("Combat")
                             if tool then LP.Character.Humanoid:EquipTool(tool) end
                         until not _G.Settings.AutoFarm or v.Humanoid.Health <= 0
                     end
                 end
                 
+                -- Quay về bãi nếu hết quái
                 if not workspace.Enemies:FindFirstChild(mName) then
                     LP.Character.HumanoidRootPart.CFrame = mPos
                 end
@@ -136,3 +73,24 @@ task.spawn(function()
         end
     end
 end)
+
+-- ═══ UI ĐƠN GIẢN HIỆN TRÊN ĐIỆN THOẠI ═══
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 150, 0, 100)
+Main.Position = UDim2.new(0.1, 0, 0.5, 0)
+Main.BackgroundColor3 = Color3.new(0,0,0)
+
+local function Btn(txt, pos, set)
+    local b = Instance.new("TextButton", Main)
+    b.Size = UDim2.new(1, 0, 0, 45)
+    b.Position = UDim2.new(0, 0, 0, pos)
+    b.Text = txt .. ": OFF"
+    b.MouseButton1Click:Connect(function()
+        _G.Settings[set] = not _G.Settings[set]
+        b.Text = txt .. ": " .. (_G.Settings[set] and "ON" or "OFF")
+    end)
+end
+
+Btn("Kill Aura", 0, "KillAura")
+Btn("Auto Farm", 50, "AutoFarm")
