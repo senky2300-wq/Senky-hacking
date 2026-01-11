@@ -1,8 +1,8 @@
 --[[
-    SENKY HUB V14 - THE BANANA KILLER (THRESHOLD TUNING)
-    - Kiến trúc: Spawn-Lock Cycling (Advanced)
-    - Cơ chế: Spawn Threshold (Giữ 2 con mồi - Safety Buffer)
-    - Chiến thuật: Kill-Finish (Đã đánh là phải chết, không ngắt quãng)
+    SENKY HUB V15 - THE GOD ARCHITECT
+    - Kiến trúc: Combat-Lock Exploit (Desync Logic)
+    - Cơ chế: Virtual Kill Aura (No Animation, High DPS)
+    - Cơ chế: Packet Stability (Chống kick khi spam Validator)
 ]]
 
 local LP = game:GetService("Players").LocalPlayer
@@ -12,55 +12,69 @@ _G.Settings = {
     AutoFarm = true,
     Distance = 22,
     Weapon = "Melee",
-    AttackInterval = 0.05,
-    SpawnThreshold = 2 -- GIỮ 2 CON ĐỂ KÍCH SPAWN NHANH NHƯ BANANA
+    AuraRange = 50, -- Tầm quét của Kill Aura
+    AttackSpeed = 0.02 -- Tốc độ gửi packet gây dame
 }
 
-local function GetAliveEnemies(mName)
-    local alive = {}
-    for _, v in pairs(workspace.Enemies:GetChildren()) do
-        if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-            table.insert(alive, v)
-        end
+-- ═══ 1. LÕI KILL AURA MƯỢT (VIRTUAL ATTACK) ═══
+local CombatFramework = require(RS:WaitForChild("CombatFramework"))
+local CombatFrameworkR
+for _, v in pairs(getupvalues(CombatFramework)) do
+    if typeof(v) == "table" and v.activeController then
+        CombatFrameworkR = v break
     end
-    return alive
 end
 
+local function VirtualAttack()
+    local AC = CombatFrameworkR.activeController
+    if AC and AC.equipped then
+        -- Combat-Lock: Gửi tín hiệu tấn công liên tục nhưng không Reset Animation
+        AC.attackInterval = 0
+        AC:attack() -- Kích hoạt trạng thái Combat trên Server
+        RS.Remotes.Validator:FireServer(0) -- Heartbeat giữ kết nối
+    end
+end
+
+-- ═══ 2. COMBAT-LOCK & SPAWN MANAGEMENT ═══
 task.spawn(function()
     while task.wait() do
         if _G.Settings.AutoFarm then
             pcall(function()
-                -- Map Brute (Lv 42) - Mục tiêu tối thượng
-                local mName = "Brute" 
-                local aliveMobs = GetAliveEnemies(mName)
-                local mobCount = #aliveMobs
+                local mName = "Brute" -- Target Level 42
+                local enemies = workspace.Enemies:GetChildren()
+                
+                -- Tìm và khóa mục tiêu chính
+                local target = nil
+                for _, v in pairs(enemies) do
+                    if v.Name == mName and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                        target = v
+                        break
+                    end
+                end
 
-                -- CHU KỲ KIỂM SOÁT SPAWN (SPAWN-LOCK CYCLING)
-                if mobCount > _G.Settings.SpawnThreshold then
-                    -- Ưu tiên chọn con yếu nhất để dứt điểm nhanh, xoay vòng spawn
-                    table.sort(aliveMobs, function(a, b) return a.Humanoid.Health < b.Humanoid.Health end)
-                    local target = aliveMobs[1]
-                    
-                    -- CHẾ ĐỘ KILL-FINISH: Đã khóa là đánh cho tới chết (Không bị kẹt khi spawn lag)
-                    while target and target.Parent and target.Humanoid.Health > 0 and _G.Settings.AutoFarm do
-                        task.wait(_G.Settings.AttackInterval)
+                if target then
+                    -- KILL AURA MODE: Di chuyển mượt và gây dame ảo
+                    repeat
+                        task.wait(_G.Settings.AttackSpeed)
                         
-                        -- Cập nhật vị trí liên tục trên đầu target
+                        -- Di chuyển mượt bằng CFrame (Stealth Positioning)
                         LP.Character.HumanoidRootPart.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, _G.Settings.Distance, 0)
                         
-                        -- Auto Equip & Fast Attack
+                        -- Tự cầm vũ khí nhưng không làm vướng màn hình
                         local tool = LP.Backpack:FindFirstChild(_G.Settings.Weapon) or LP.Character:FindFirstChild(_G.Settings.Weapon)
                         if tool then LP.Character.Humanoid:EquipTool(tool) end
                         
-                        -- Heartbeat Validator để duy trì liên lạc server
-                        RS.Remotes.Validator:FireServer(0)
-                        -- AC:attack() từ Framework
-                    end
+                        -- Kích hoạt Kill Aura qua Virtual Attack
+                        VirtualAttack()
+                        
+                        -- Đưa Server vào trạng thái Combat-Lock
+                        -- Bằng cách gửi liên tiếp các Remote mà không cần chờ Animation kết thúc
+                    until not _G.Settings.AutoFarm or target.Humanoid.Health <= 0
                 else
-                    -- TRẠNG THÁI "NUÔI SPAWN" (BUFFER STATE)
-                    -- Đứng tại điểm Spawn trung tâm, lơ lửng chờ quái mới hiện ra
-                    local campPos = CFrame.new(-1103, 14, 3840) -- Tọa độ Camp Brute chuẩn
-                    LP.Character.HumanoidRootPart.CFrame = campPos * CFrame.new(0, 45, 0) -- Bay cao để giữ an toàn cho "mồi"
+                    -- TRẠNG THÁI CHỜ (RETAIN COMBAT STATE)
+                    -- Đứng tại điểm spawn và vẫn gửi Validator để server không thoát Combat Mode
+                    LP.Character.HumanoidRootPart.CFrame = CFrame.new(-1103, 14, 3840) * CFrame.new(0, 40, 0)
+                    RS.Remotes.Validator:FireServer(0)
                 end
             end)
         end
