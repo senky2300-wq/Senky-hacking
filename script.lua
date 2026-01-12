@@ -1,17 +1,17 @@
 
 --[[
-    🚀 SCRIPT: CHIẾN THẦN V16.2 LITE - DELTA EXECUTOR EDITION
-    💀 TRẠNG THÁI: TỐI ƯU CHO DELTA - FULL CODE KHÔNG CẮT
+    🚀 SCRIPT: CHIẾN THẦN V16.2 ULTIMATE - GỘP 3 PHIÊN BẢN
+    💀 TRẠNG THÁI: 10/10 HOÀN HẢO - FULL SEA 1, 2, 3 (LEVEL 0-2800)
     🔥 ADMIN ID: 1180691145630683216
     -------------------------------------------------------------------
-    ⚠️ Version này đã được tối ưu hóa cho Delta Executor
-    - Loại bỏ TweenService (Delta không support tốt)
-    - Giảm độ phức tạp của vòng lặp
-    - Sử dụng teleport trực tiếp thay vì tween
-    - Giữ nguyên 100% WorldData
+    ✅ Đã gộp: V16.2 OMNI + V16.1 + V16.2 GOD MODE
+    ✅ Loại bỏ: Code trùng lặp
+    ✅ Giữ lại: Tất cả tính năng tốt nhất
 ]]
 
--- 1. DATABASE ĐẦY ĐỦ (KHÔNG BỎ BẤT KỲ ENTRY NÀO)
+-- ═══════════════════════════════════════════════════════════════
+-- 1. DATABASE ĐẦY ĐỦ - 81 ENTRIES (LEVEL 0-2775)
+-- ═══════════════════════════════════════════════════════════════
 local WorldData = {
     -- 🌊 SEA 1 (LEVEL 0-700)
     {Level = 0, Name = "Bandit", NPC = CFrame.new(1059.37, 16.55, 1548.43), Quest = "BanditQuest1", ID = 1, Mob = "Bandit"},
@@ -103,22 +103,31 @@ local WorldData = {
     {Level = 2775, Name = "Leviathan", NPC = CFrame.new(-5420.16, 314.45, -2823.07), Quest = "LeviathanQuest", ID = 1, Mob = "Leviathan"}
 }
 
--- 2. CẤU HÌNH (TỐI ƯU CHO DELTA)
+-- ═══════════════════════════════════════════════════════════════
+-- 2. CẤU HÌNH VÀ BIẾN TOÀN CỤC
+-- ═══════════════════════════════════════════════════════════════
+local UIS = game:GetService("UserInputService")
 _G.Config = {
     AutoFarm = true,
+    FlySpeed = 165,
     HeightAbove = 25,
-    AttackDelay = 0.15,
+    AttackDelay = (UIS.TouchEnabled and not UIS.KeyboardEnabled) and 0.22 or 0.12,
     WeaponKeywords = {"Sword", "Melee", "Combat", "Fighting Style", "Fruit"}
 }
 
 local LP = game:GetService("Players").LocalPlayer
 local RS = game:GetService("ReplicatedStorage")
+local TS = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local LastAtk = 0
-local LastQuestCheck = 0
-local ActiveMob = nil
 
--- 3. HÀM LẤY NHÂN VẬT
+local CurrentTween, ActiveMob, LastQuestCheck, LastAtk = nil, nil, 0, 0
+local Connections = {}
+
+-- ═══════════════════════════════════════════════════════════════
+-- 3. HÀM PHỤ TRỢ
+-- ═══════════════════════════════════════════════════════════════
+
+-- Lấy nhân vật an toàn
 local function GetChar()
     local c = LP.Character
     if c and c.Parent == workspace and c:FindFirstChild("HumanoidRootPart") and c:FindFirstChild("Humanoid") and c.Humanoid.Health > 0 then
@@ -127,7 +136,7 @@ local function GetChar()
     return nil, nil, nil
 end
 
--- 4. KIỂM TRA QUEST
+-- Kiểm tra quest
 local function CheckQuestStatus(targetMob)
     local success, questUI = pcall(function() return LP.PlayerGui.Main.Quest end)
     if success and questUI and questUI.Visible then
@@ -143,7 +152,31 @@ local function CheckQuestStatus(targetMob)
     return false
 end
 
--- 5. TỰ ĐỘNG TRANG BỊ VŨ KHÍ
+-- Di chuyển an toàn
+local function SafeMove(TargetCF)
+    local char, hrp = GetChar()
+    if not hrp then return end
+    if CurrentTween then CurrentTween:Cancel(); CurrentTween = nil end
+    
+    local dist = (hrp.Position - TargetCF.p).Magnitude
+    if dist < 15 then 
+        hrp.CFrame = TargetCF 
+        return 
+    end
+    
+    CurrentTween = TS:Create(hrp, TweenInfo.new(dist/_G.Config.FlySpeed, Enum.EasingStyle.Linear), {CFrame = TargetCF})
+    CurrentTween:Play()
+    
+    local start = tick()
+    repeat task.wait() until (tick() - start > 8) or not _G.Config.AutoFarm or not GetChar()
+    
+    if CurrentTween then 
+        CurrentTween:Cancel()
+        CurrentTween = nil 
+    end
+end
+
+-- Tự động trang bị vũ khí
 local function EquipWeapon(char, hum)
     local equipped = false
     for _, t in ipairs(LP.Backpack:GetChildren()) do
@@ -151,7 +184,7 @@ local function EquipWeapon(char, hum)
         for _, k in ipairs(_G.Config.WeaponKeywords) do
             if (t.ToolTip..t.Name):find(k) then 
                 hum:EquipTool(t)
-                wait(0.1)
+                task.wait(0.1)
                 equipped = true
                 break 
             end
@@ -159,126 +192,181 @@ local function EquipWeapon(char, hum)
     end
 end
 
--- 6. VÒNG LẶP FARM CHÍNH (KHÔNG DÙNG TWEEN - DELTA COMPATIBLE)
-spawn(function()
+-- ═══════════════════════════════════════════════════════════════
+-- 4. VÒNG LẶP FARM CHÍNH
+-- ═══════════════════════════════════════════════════════════════
+task.spawn(function()
     while _G.Config.AutoFarm do
-        wait(0.1)
+        task.wait(0.1)
         pcall(function()
             local char, hrp, hum = GetChar()
-            if char then
-                local myLevel = LP.Data.Level.Value
-                local currentTarget = nil
-                
-                -- Tìm quest đúng level
-                for i = #WorldData, 1, -1 do
-                    if myLevel >= WorldData[i].Level then
-                        currentTarget = WorldData[i]
-                        break
-                    end
+            if not char then return end
+            
+            local myLevel = LP.Data.Level.Value
+            local currentTarget = nil
+            
+            -- Tìm quest phù hợp (loop ngược)
+            for i = #WorldData, 1, -1 do
+                if myLevel >= WorldData[i].Level then
+                    currentTarget = WorldData[i]
+                    break
                 end
-
-                -- Xử lý chuyển Sea
-                if currentTarget.Special then
-                    hrp.CFrame = currentTarget.NPC
-                    wait(0.5)
-                    local s, e = pcall(function() 
-                        return RS.Remotes.CommF_:InvokeServer(currentTarget.Special) 
-                    end)
-                    if not s then 
-                        warn("⚠️ Sea Teleport failed: "..tostring(e))
-                    end
-                    wait(5)
-                    return
+            end
+            
+            if not currentTarget then return end
+            
+            -- Xử lý chuyển Sea
+            if currentTarget.Special then
+                SafeMove(currentTarget.NPC)
+                local s, e = pcall(function() 
+                    return RS.Remotes.CommF_:InvokeServer(currentTarget.Special) 
+                end)
+                if not s then 
+                    warn("⚠️ Sea Teleport failed: "..tostring(e))
+                    task.wait(2)
                 end
-
-                -- Nhận Quest
-                if not CheckQuestStatus(currentTarget.Mob) then
-                    if tick() - LastQuestCheck > 5 then
-                        hrp.CFrame = currentTarget.NPC
-                        wait(0.5)
+                task.wait(5)
+                return
+            end
+            
+            -- Nhận quest
+            if not CheckQuestStatus(currentTarget.Mob) then
+                if tick() - LastQuestCheck > 5 then
+                    SafeMove(currentTarget.NPC)
+                    if (hrp.Position - currentTarget.NPC.p).Magnitude < 20 then
                         pcall(function() 
                             RS.Remotes.CommF_:InvokeServer("StartQuest", currentTarget.Quest, currentTarget.ID) 
                         end)
-                        LastQuestCheck = tick()
                     end
-                else
-                    -- Tìm quái
-                    ActiveMob = nil
-                    for _, folderName in ipairs({"Enemies", "Bosses", "Raiders"}) do
-                        if ActiveMob then break end
-                        local f = workspace:FindFirstChild(folderName)
-                        if f then
-                            for _, m in ipairs(f:GetChildren()) do
-                                if m.Name == currentTarget.Mob and m:FindFirstChild("Humanoid") and m.Humanoid.Health > 0 then
-                                    ActiveMob = m
-                                    break
-                                end
+                    LastQuestCheck = tick()
+                end
+            else
+                -- Tìm quái
+                ActiveMob = nil
+                for _, folderName in ipairs({"Enemies", "Bosses", "Raiders"}) do
+                    if ActiveMob then break end
+                    local f = workspace:FindFirstChild(folderName)
+                    if f then
+                        for _, m in ipairs(f:GetChildren()) do
+                            if m.Name == currentTarget.Mob and m:FindFirstChild("Humanoid") and m.Humanoid.Health > 0 then
+                                ActiveMob = m
+                                break
                             end
                         end
                     end
-
-                    if ActiveMob and ActiveMob:FindFirstChild("HumanoidRootPart") then
-                        local mHrp = ActiveMob.HumanoidRootPart
-                        
-                        -- Teleport đến quái (thay vì tween)
-                        if (mHrp.Position - hrp.Position).Magnitude < 500 then
-                            hrp.CFrame = mHrp.CFrame * CFrame.new(0, _G.Config.HeightAbove, 0)
-                        else
-                            hrp.CFrame = currentTarget.NPC
-                            wait(1)
-                            return
-                        end
-
-                        -- Gom quái
-                        if not mHrp.Anchored then
-                            mHrp.CanCollide = false
-                            mHrp.Velocity = Vector3.new(0, 0, 0)
-                            mHrp.CFrame = hrp.CFrame * CFrame.new(0, -_G.Config.HeightAbove, 0)
-                            ActiveMob.Humanoid.PlatformStand = true
-                        end
-
-                        -- Tấn công
-                        local tool = char:FindFirstChildOfClass("Tool")
-                        if not tool then 
-                            EquipWeapon(char, hum)
-                            tool = char:FindFirstChildOfClass("Tool")
-                        end
-                        
-                        if tool and (tick() - LastAtk > _G.Config.AttackDelay) then
-                            tool:Activate()
-                            pcall(function() 
-                                RS.Remotes.CommF_:InvokeServer("Attack", tool) 
-                            end)
-                            LastAtk = tick()
-                        end
+                end
+                
+                if ActiveMob and ActiveMob:FindFirstChild("HumanoidRootPart") then
+                    local mHrp = ActiveMob.HumanoidRootPart
+                    
+                    -- Teleport (check distance để tránh anti-cheat)
+                    if (mHrp.Position - hrp.Position).Magnitude < 500 then
+                        hrp.CFrame = mHrp.CFrame * CFrame.new(0, _G.Config.HeightAbove, 0)
                     else
-                        -- Không có quái - về NPC
-                        hrp.CFrame = currentTarget.NPC * CFrame.new(0, 50, 0)
-                        wait(2)
+                        SafeMove(mHrp.CFrame * CFrame.new(0, _G.Config.HeightAbove, 0))
                     end
+                    
+                    -- Gom quái
+                    if not mHrp.Anchored then
+                        mHrp.CanCollide = false
+                        mHrp.Velocity = Vector3.new(0, 0, 0)
+                        mHrp.CFrame = hrp.CFrame * CFrame.new(0, -_G.Config.HeightAbove, 0)
+                        ActiveMob.Humanoid.PlatformStand = true
+                    end
+                    
+                    -- Attack
+                    local tool = char:FindFirstChildOfClass("Tool")
+                    if not tool then 
+                        EquipWeapon(char, hum)
+                        tool = char:FindFirstChildOfClass("Tool")
+                    end
+                    
+                    if tool and (tick() - LastAtk > _G.Config.AttackDelay) then
+                        tool:Activate()
+                        pcall(function() 
+                            RS.Remotes.CommF_:InvokeServer("Attack", tool) 
+                        end)
+                        LastAtk = tick()
+                    end
+                else
+                    -- Không có quái - bay về NPC
+                    SafeMove(currentTarget.NPC * CFrame.new(0, 50, 0))
                 end
             end
         end)
     end
 end)
 
--- 7. ANTI-AFK
-LP.Idled:Connect(function()
+-- ═══════════════════════════════════════════════════════════════
+-- 5. ANTI-AFK
+-- ═══════════════════════════════════════════════════════════════
+Connections["AntiAFK"] = LP.Idled:Connect(function()
     local VU = game:GetService("VirtualUser")
     VU:CaptureController()
     VU:ClickButton2(Vector2.new())
+    local c, hrp, hum = GetChar()
+    if hum then 
+        hum.Jump = true
+        task.wait(0.2)
+        hum.Jump = false 
+    end
 end)
 
--- 8. HÀM DỪNG
-_G.StopDelta = function()
+-- ═══════════════════════════════════════════════════════════════
+-- 6. HÀM DỪNG & CLEANUP
+-- ═══════════════════════════════════════════════════════════════
+_G.StopChienThan = function()
     _G.Config.AutoFarm = false
+    
+    -- Reset mob
     if ActiveMob and ActiveMob:FindFirstChild("HumanoidRootPart") then
         ActiveMob.HumanoidRootPart.CanCollide = true
         if ActiveMob:FindFirstChild("Humanoid") then
             ActiveMob.Humanoid.PlatformStand = false
         end
     end
-    warn("💀 DELTA VERSION ĐÃ DỪNG! ✅")
+    
+    -- Cancel tween
+    if CurrentTween then 
+        CurrentTween:Cancel()
+        CurrentTween = nil
+    end
+    
+    -- Disconnect connections
+    for _, conn in pairs(Connections) do 
+        if conn then 
+            conn:Disconnect()
+        end 
+    end
+    
+    warn("💀 CHIẾN THẦN ĐÃ DỪNG - CLEANUP HOÀN TẤT! ✅")
 end
 
-warn("🏆 V16.2 DELTA EDITION LOADED! FULL DATA - ZERO TWEEN! 💀🔥")
+-- ═══════════════════════════════════════════════════════════════
+-- 7. THÔNG BÁO LOAD THÀNH CÔNG
+-- ═══════════════════════════════════════════════════════════════
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("🏆 CHIẾN THẦN V16.2 ULTIMATE EDITION")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("✅ Database: "..#WorldData.." quests (Level 0-2775)")
+print("✅ Auto Farm: ENABLED")
+print("✅ Auto Quest: ENABLED")
+print("✅ Auto Equip Weapon: ENABLED")
+print("✅ Anti-AFK: ENABLED")
+print("✅ Sea Auto-Teleport: ENABLED")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("🎯 Current Level: "..LP.Data.Level.Value)
+
+-- Tìm quest hiện tại
+local myLevel = LP.Data.Level.Value
+for i = #WorldData, 1, -1 do
+    if myLevel >= WorldData[i].Level and not WorldData[i].Special then
+        print("📍 Current Quest: "..WorldData[i].Name.." (Level "..WorldData[i].Level..")")
+        break
+    end
+end
+
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("⚙️  Để dừng script: _G.StopChienThan()")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+warn("🔥 CHIẾN THẦN ULTIMATE ĐANG HOẠT ĐỘNG! 💀")
